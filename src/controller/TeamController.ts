@@ -61,7 +61,7 @@ export class TeamController {
   _getRequestedTeamData(request: Request) {
     const teamData = new TeamData();
 
-    teamData.times = request.body.times;
+    teamData.times = request.body.times || 1; // TODO: DB から取得するように修正する
     teamData.win = request.body.win || 0;
     teamData.lose = request.body.lose || 0;
     teamData.winContinue = request.body.winContinue || 0;

@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-//import { createConnection } from 'typeorm';
+import { createConnection } from 'typeorm';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { Request, Response } from 'express';
@@ -7,7 +7,7 @@ import { Routes } from './routes';
 
 (async () => {
   try {
-    //const connection = await createConnection();
+    const connection = await createConnection();
 
     // create express app
     const app = express();
@@ -23,6 +23,7 @@ import { Routes } from './routes';
             res,
             next
           );
+          res.set('Access-Control-Allow-Origin', '*');
           if (result instanceof Promise) {
             result.then(result =>
               result !== null && result !== undefined
@@ -39,6 +40,25 @@ import { Routes } from './routes';
 
     // setup express app here
     // ...
+    app.use((req, res, next) => {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+      res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
+
+      if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+      }
+      else {
+        next();
+      }
+    });
+
+    /*
+    app.options('*', (req, res) => {
+      res.sendStatus(200);
+    });
+
+     */
 
     // start express server
     app.listen(3000);
