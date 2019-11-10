@@ -1,5 +1,14 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+  ManyToOne, OneToMany, JoinColumn
+} from 'typeorm';
 import { Team } from './Team';
+import { BattingData } from './BattingData';
 
 export enum Position {
   CATCHER   = '捕',
@@ -12,19 +21,20 @@ export enum Position {
   RIGHT     = '右',
 }
 
-@Entity('player')
+@Entity()
+@Index('idx_team_id_order', ['team', 'order'])
 export class Player {
 
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({unsigned: true})
   id: number;
 
   @Column({length: 10})
   name: string;
 
-  @Index()
-  @OneToOne(type => Team)
-  @Column({name: 'team_id'})
-  teamId: number;
+  @Index('idx_team_id')
+  @ManyToOne(type => Team, team => team.players)
+  @JoinColumn({name: 'team_id'})
+  team: Team;
 
   @Column('tinyint')
   order: number;
@@ -32,24 +42,27 @@ export class Player {
   @Column('enum', {enum: Position, default: Position.CATCHER})
   position: Position;
 
-  @Column('tinyint')
+  @Column({type: 'tinyint', default: 5})
   power: number;
 
-  @Column('tinyint')
+  @Column({type: 'tinyint', default: 5})
   meet: number;
 
-  @Column('tinyint')
+  @Column({type: 'tinyint', default: 5})
   run: number;
 
-  @Column('tinyint')
+  @Column({type: 'tinyint', default: 5})
   defense: number;
 
   @Column({default: true})
   active: boolean;
 
-  @CreateDateColumn('datetime')
-  created: any;
+  @CreateDateColumn()
+  created: Date;
 
-  @UpdateDateColumn('datetime')
-  updated: any;
+  @UpdateDateColumn()
+  updated: Date;
+
+  @OneToMany(type => BattingData, battingData => battingData.batterId)
+  battingData: BattingData[];
 }

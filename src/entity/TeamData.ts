@@ -1,20 +1,20 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index, OneToOne, JoinColumn } from 'typeorm';
 import { Team } from './Team';
 
-@Entity('team_data')
-@Index(['times', 'teamId'], {unique: true})
+@Entity()
+@Index('idx_times_team', ['times', 'team'], {unique: true})
 export class TeamData {
 
-  @PrimaryGeneratedColumn({type: 'bigint'})
+  @PrimaryGeneratedColumn({type: 'bigint', unsigned: true})
   id: number;
 
-  @Index()
-  @Column()
+  @Index('idx_times')
+  @Column({unsigned: true})
   times: number;
 
-  @OneToOne(type => Team)
+  @OneToOne(type => Team, team => team.teamData)
   @JoinColumn({name: 'team_id'})
-  teamId: number;
+  team: Team;
 
   @Column({type: 'smallint', default: 0})
   win: number;
@@ -46,9 +46,9 @@ export class TeamData {
   @Column({default: true})
   active: boolean;
 
-  @CreateDateColumn('datetime')
-  created: any;
+  @CreateDateColumn()
+  created: Date;
 
-  @UpdateDateColumn('datetime')
-  updated: any;
+  @UpdateDateColumn()
+  updated: Date;
 }

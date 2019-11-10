@@ -1,50 +1,59 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, Index, CreateDateColumn, UpdateDateColumn, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  Index,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+  ManyToOne
+} from 'typeorm';
 import { Pitcher } from './Pitcher';
 
-@Entity('pitching_data')
+@Entity()
 export class PitchingData {
 
   @PrimaryGeneratedColumn({type: 'bigint', unsigned: true})
   id: number;
 
-  @Index()
+  @Index('idx_times')
   @Column()
   times: number;
 
-  @OneToOne(type => Pitcher)
+  @ManyToOne(type => Pitcher, pitcher => pitcher.pitchingData)
   @JoinColumn({name: 'pitcher_id'})
-  pitcherId: number;
+  pitcherId: Pitcher;
 
-  @Column('smallint')
+  @Column({type: 'smallint', default: 0})
   win: number;
 
-  @Column('smallint')
+  @Column({type: 'smallint', default: 0})
   lose: number;
 
-  @Column({name: 'strike_out', type: 'smallint'})
+  @Column({name: 'strike_out', type: 'smallint', default: 0})
   strikeOut: number;
 
-  @Column({name: 'four_ball', type: 'smallint'})
+  @Column({name: 'four_ball', type: 'smallint', default: 0})
   fourBall: number;
 
-  @Column('smallint')
+  @Column({type: 'smallint', default: 0})
   hit: number;
 
-  @Column('smallint')
+  @Column({type: 'smallint', default: 0})
   hr: number;
 
-  @Column('smallint')
+  @Column({type: 'smallint', default: 0})
   error: number;
 
-  @Column({name: 'loss_score', type: 'smallint'})
+  @Column({name: 'loss_score', type: 'smallint', default: 0})
   lossScore: number;
 
   @Column({default: true})
   active: boolean;
 
-  @CreateDateColumn('datetime')
-  created: any;
+  @CreateDateColumn()
+  created: Date;
 
-  @UpdateDateColumn('datetime')
-  updated: any;
+  @UpdateDateColumn()
+  updated: Date;
 }

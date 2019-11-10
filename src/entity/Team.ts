@@ -1,23 +1,36 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index, OneToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+  OneToOne,
+  JoinColumn,
+  OneToMany
+} from 'typeorm';
 import { User } from './User';
+import { TeamData } from './TeamData';
+import { Player } from './Player';
+import { Pitcher } from './Pitcher';
 
-@Entity('team')
+@Entity()
 export class Team {
 
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({unsigned: true})
   id: number;
 
-  @Index({unique: true})
+  @Index('u_idx_name', {unique: true})
   @Column({length: 10})
   name: string;
 
   @Column({length: 16})
   icon: string;
 
-  @Index()
-  @OneToOne(type => User)
+  @Index('idx_user_id')
+  @OneToOne(type => User, user => user.team, { cascade: true })
   @JoinColumn({name: 'user_id'})
-  userId: number;
+  user: User;
 
   @Column({name: 'type_attack', type: 'tinyint', default: 5})
   typeAttack: number;
@@ -34,9 +47,18 @@ export class Team {
   @Column({default: true})
   active: boolean;
 
-  @CreateDateColumn('datetime')
-  created: any;
+  @CreateDateColumn()
+  created: Date;
 
-  @UpdateDateColumn('datetime')
-  updated: any;
+  @UpdateDateColumn()
+  updated: Date;
+
+  @OneToOne(type => TeamData, teamData => teamData.team, { cascade: true })
+  teamData: TeamData;
+
+  @OneToMany(type => Player, player => player.team)
+  players: Player[];
+
+  @OneToMany(type => Pitcher, pitcher => pitcher.team)
+  pitchers: Pitcher[];
 }

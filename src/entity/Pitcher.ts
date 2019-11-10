@@ -1,43 +1,60 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+  ManyToOne, OneToMany
+} from 'typeorm';
 import { Team } from './Team';
+import { PitchingData } from './PitchingData';
+import { BattingData } from './BattingData';
 
-@Entity('pitcher')
-@Index(['teamId', 'order'])
+@Entity()
+@Index('idx_team_id_order', ['team', 'order'])
 export class Pitcher {
 
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({unsigned: true})
   id: number;
 
   @Column({length: 8})
   name: string;
 
-  @Index()
-  @OneToOne(type => Team)
+  @Index('idx_team_id')
+  @ManyToOne(type => Team, team => team.pitchers)
   @JoinColumn({name: 'team_id'})
-  teamId: number;
+  team: Team;
 
   @Column('tinyint')
   order: number;
 
-  @Column('tinyint')
+  @Column({type: 'tinyint', default: 5})
   speed: number;
 
-  @Column('tinyint')
+  @Column({type: 'tinyint', default: 5})
   change: number;
 
-  @Column('tinyint')
+  @Column({type: 'tinyint', default: 5})
   control: number;
 
-  @Column('tinyint')
+  @Column({type: 'tinyint', default: 5})
   defense: number;
 
   @Column({default: true})
   active: boolean;
 
-  @CreateDateColumn('datetime')
-  created: any;
+  @CreateDateColumn()
+  created: Date;
 
-  @UpdateDateColumn('datetime')
-  updated: any;
+  @UpdateDateColumn()
+  updated: Date;
+
+  @OneToMany(type => PitchingData, pitchingData => pitchingData.pitcherId)
+  pitchingData: PitchingData[];
+
+  @OneToMany(type => BattingData, battingData => battingData.batterId)
+  battingData: BattingData[];
 }
 

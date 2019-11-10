@@ -1,11 +1,15 @@
 {
-   "name": "GekipawaBackend",
+   "name": "gekipawa-backend",
    "version": "0.0.1",
-   "description": "Awesome project developed with TypeORM.",
-   "devDependencies": {
-      "ts-node": "3.3.0",
-      "@types/node": "^8.0.29",
-      "typescript": "3.3.3333"
+   "description": "gekipawa backend API to CRUD to MySQL with TypeORM.",
+   "license": "UNLICENSED",
+   "repository": {
+      "type": "git",
+      "url": "https://github.com/yutwatan/gekipawa-backend"
+   },
+   "scripts": {
+      "start": "ts-node src/index.ts",
+      "lint": "eslint src/**/*.ts"
    },
    "dependencies": {
       "body-parser": "^1.18.1",
@@ -14,7 +18,15 @@
       "reflect-metadata": "^0.1.10",
       "typeorm": "0.2.18"
    },
-   "scripts": {
-      "start": "ts-node src/index.ts"
+   "devDependencies": {
+      "@types/node": "^8.0.29",
+      "@typescript-eslint/eslint-plugin": "^2.6.0",
+      "@typescript-eslint/parser": "^2.6.0",
+      "eslint": "^6.6.0",
+      "eslint-config-prettier": "^6.5.0",
+      "eslint-plugin-prettier": "^3.1.1",
+      "prettier": "^1.18.2",
+      "ts-node": "3.3.0",
+      "typescript": "3.3.3333"
    }
 }
