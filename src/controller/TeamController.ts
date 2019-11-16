@@ -3,6 +3,8 @@ import { NextFunction, Request, Response } from 'express';
 import { Team } from '../entity/Team';
 import { User } from '../entity/User';
 import { TeamData } from '../entity/TeamData';
+import { Player } from '../entity/Player';
+import { Pitcher } from '../entity/Pitcher';
 
 export class TeamController {
 
@@ -27,6 +29,8 @@ export class TeamController {
     const team = this._getRequestedTeam(request);
     team.teamData = this._getRequestedTeamData(request);
     team.user = this._getRequestedUser(request);
+    team.players = this._getRequestedPlayer(request);
+    team.pitchers = this._getRequestedPitcher(request);
 
     return await this.teamRepository.save(team);
   }
@@ -82,5 +86,52 @@ export class TeamController {
     user.password = request.body.password;
 
     return user;
+  }
+
+  _getRequestedPlayer(request: Request) {
+    let players: Player[] = [];
+
+    for (let [i, playerData] of request.body.players.entries()) {
+      players.push(this._getPlayerData(playerData, i + 1));
+    }
+
+    for (let [i, playerData] of request.body.farmPlayers.entries()) {
+      players.push(this._getPlayerData(playerData, i + 9));
+    }
+
+    return players;
+  }
+
+  _getRequestedPitcher(request: Request) {
+    let pitchers: Pitcher[] = [];
+
+    for (let [i, pitcherData] of request.body.pitchers.entries()) {
+      const pitcher = new Pitcher();
+
+      pitcher.name = pitcherData.playerName;
+      pitcher.order = i + 13;
+      pitcher.speed = pitcherData.speed;
+      pitcher.change = pitcherData.change;
+      pitcher.control = pitcherData.control;
+      pitcher.defense = pitcherData.defense;
+
+      pitchers.push(pitcher);
+    }
+
+    return pitchers;
+  }
+
+  _getPlayerData(playerData, index) {
+    const player = new Player();
+
+    player.name = playerData.playerName;
+    player.order = index;
+    player.position = playerData.position;
+    player.power = playerData.power;
+    player.meet = playerData.meet;
+    player.run = playerData.run;
+    player.defense = playerData.defense;
+
+    return player;
   }
 }

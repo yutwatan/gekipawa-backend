@@ -56,9 +56,9 @@ export class Team {
   @OneToOne(type => TeamData, teamData => teamData.team, { cascade: true })
   teamData: TeamData;
 
-  @OneToMany(type => Player, player => player.team)
+  @OneToMany(type => Player, player => player.team, { cascade: true })
   players: Player[];
 
-  @OneToMany(type => Pitcher, pitcher => pitcher.team)
+  @OneToMany(type => Pitcher, pitcher => pitcher.team, { cascade: true })
   pitchers: Pitcher[];
 }

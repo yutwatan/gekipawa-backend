@@ -7,7 +7,7 @@ import { Routes } from './routes';
 
 (async () => {
   try {
-    const connection = await createConnection();
+    await createConnection();
 
     // create express app
     const app = express();
