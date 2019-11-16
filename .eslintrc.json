@@ -1,0 +1,31 @@
+{
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "globals": {
+  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    "quotes": [
+      "error",
+      "single"
+    ],
+    "indent": [
+      "error",
+      2
+    ]
+  }
+}

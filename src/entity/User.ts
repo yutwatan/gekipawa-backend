@@ -1,13 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index, OneToOne } from 'typeorm';
+import { Team } from './Team';
 
-@Entity('user')
+@Entity()
 export class User {
 
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({unsigned: true})
   id: number;
 
-  @Index({unique: true})
-  @Column({length: 8, unique: true})
+  @Index('idx_name', {unique: true})
+  @Column({length: 8})
   name: string;
 
   @Column({length: 16})
@@ -16,9 +17,12 @@ export class User {
   @Column({default: true})
   active: boolean;
 
-  @CreateDateColumn('datetime')
-  created: any;
+  @CreateDateColumn()
+  created: Date;
 
-  @UpdateDateColumn('datetime')
-  updated: any;
+  @UpdateDateColumn()
+  updated: Date;
+
+  @OneToOne(type => Team, team => team.user)
+  team: Team;
 }

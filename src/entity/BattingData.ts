@@ -5,13 +5,13 @@ export enum BatterKind {
   PITCHER = '投手',
 }
 
-@Entity('batting_data')
-@Index(['batter_kind', 'batter_id'])
+@Entity()
+@Index('idx_batter_kind_batter_id', ['batterKind', 'batterId'])
 export class BattingData {
   @PrimaryGeneratedColumn({type: 'bigint', unsigned: true})
   id: number;
 
-  @Index()
+  @Index('idx_times')
   @Column()
   times: number;
 
@@ -21,36 +21,36 @@ export class BattingData {
   @Column({name: 'batter_id'})
   batterId: number;
 
-  @Column('smallint')
+  @Column({type: 'smallint', default: 0})
   hit: number;
 
-  @Column('smallint')
+  @Column({type: 'smallint', default: 0})
   hr: number;
 
-  @Column({name: 'bat_score', type: 'smallint'})
+  @Column({name: 'bat_score', type: 'smallint', default: 0})
   batScore: number;
 
-  @Column({name: 'four_ball', type: 'smallint'})
+  @Column({name: 'four_ball', type: 'smallint', default: 0})
   fourBall: number;
 
-  @Column({name: 'strike_out', type: 'smallint'})
+  @Column({name: 'strike_out', type: 'smallint', default: 0})
   strikeOut: number;
 
-  @Column('smallint')
+  @Column({type: 'smallint', default: 0})
   bunt: number;
 
-  @Column('smallint')
+  @Column({type: 'smallint', default: 0})
   steal: number;
 
-  @Column('smallint')
+  @Column({type: 'smallint', default: 0})
   error: number;
 
   @Column({default: true})
   active: boolean;
 
-  @CreateDateColumn('datetime')
-  created: any;
+  @CreateDateColumn()
+  created: Date;
 
-  @UpdateDateColumn('datetime')
-  updated: any;
+  @UpdateDateColumn()
+  updated: Date;
 }
