@@ -11,6 +11,7 @@ import {
 import { Team } from './Team';
 import { PitchingData } from './PitchingData';
 import { BattingData } from './BattingData';
+import { Condition } from './Player';
 
 @Entity()
 @Index('idx_team_id_order', ['team', 'order'])
@@ -29,6 +30,9 @@ export class Pitcher {
 
   @Column('tinyint')
   order: number;
+
+  @Column('enum', {enum: Condition, default: Condition.NORMAL})
+  condition: number;
 
   @Column({type: 'tinyint', default: 5})
   speed: number;
@@ -51,10 +55,10 @@ export class Pitcher {
   @UpdateDateColumn()
   updated: Date;
 
-  @OneToMany(type => PitchingData, pitchingData => pitchingData.pitcherId)
+  @OneToMany(type => PitchingData, pitchingData => pitchingData.pitcherId, {cascade: true})
   pitchingData: PitchingData[];
 
-  @OneToMany(type => BattingData, battingData => battingData.batterId)
+  @OneToMany(type => BattingData, battingData => battingData.batterId, {cascade: true})
   battingData: BattingData[];
 }
 

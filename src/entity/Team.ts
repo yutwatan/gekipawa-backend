@@ -44,6 +44,9 @@ export class Team {
   @Column({name: 'type_mind', type: 'tinyint', default: 5})
   typeMind: number;
 
+  @Column({name: 'camp_times', type: 'tinyint', default: 5})
+  campTimes: number;
+
   @Column({default: true})
   active: boolean;
 

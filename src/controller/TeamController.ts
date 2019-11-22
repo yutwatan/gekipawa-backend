@@ -12,11 +12,14 @@ export class TeamController {
   private userRepository = getRepository(User);
 
   async all(request: Request, response: Response, next: NextFunction) {
-    return this.teamRepository.find();
+    return this.teamRepository.find({relations: ['user']});
   }
 
   async one(request: Request, response: Response, next: NextFunction) {
-    return this.teamRepository.findOne(request.params.id, {relations: ['teamData', 'userId']});
+    return this.teamRepository.findOne(
+      request.params.id,
+      {relations: ['teamData', 'user', 'players', 'pitchers']}
+    );
   }
 
   /**

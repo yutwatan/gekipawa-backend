@@ -1,6 +1,6 @@
 {
    "name": "gekipawa-backend",
-   "version": "0.0.1",
+   "version": "0.0.2",
    "description": "gekipawa backend API to CRUD to MySQL with TypeORM.",
    "license": "UNLICENSED",
    "repository": {
