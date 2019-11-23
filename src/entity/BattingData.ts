@@ -1,4 +1,14 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+  ManyToOne,
+  JoinColumn
+} from 'typeorm';
+import { Player } from './Player';
 
 export enum BatterKind {
   PLAYER  = '野手',
@@ -18,7 +28,8 @@ export class BattingData {
   @Column({name: 'batter_kind', type: 'enum', enum: BatterKind, default: BatterKind.PLAYER})
   batterKind: BatterKind;
 
-  @Column({name: 'batter_id'})
+  @ManyToOne(type => Player, player => player.battingData)
+  @JoinColumn({name: 'batter_id'})
   batterId: number;
 
   @Column({type: 'smallint', default: 0})

@@ -21,6 +21,14 @@ export enum Position {
   RIGHT     = '右',
 }
 
+export enum Condition {
+  AWFUL     = 1,
+  BAD       = 2,
+  NORMAL    = 3,
+  GOOD      = 4,
+  EXCELLENT = 5,
+}
+
 @Entity()
 @Index('idx_team_id_order', ['team', 'order'])
 export class Player {
@@ -41,6 +49,9 @@ export class Player {
 
   @Column('enum', {enum: Position, default: Position.CATCHER})
   position: Position;
+
+  @Column('enum', {enum: Condition, default: Condition.NORMAL})
+  condition: number;
 
   @Column({type: 'tinyint', default: 5})
   power: number;
@@ -63,6 +74,6 @@ export class Player {
   @UpdateDateColumn()
   updated: Date;
 
-  @OneToMany(type => BattingData, battingData => battingData.batterId)
+  @OneToMany(type => BattingData, battingData => battingData.batterId, {cascade: true})
   battingData: BattingData[];
 }

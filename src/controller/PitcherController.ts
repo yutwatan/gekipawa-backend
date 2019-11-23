@@ -7,15 +7,15 @@ export class PitcherController {
   private pitcherRepository = getRepository(Pitcher);
 
   async all(request: Request, response: Response, next: NextFunction) {
-    return this.pitcherRepository.find();
+    return await this.pitcherRepository.find();
   }
 
   async one(request: Request, response: Response, next: NextFunction) {
-    return this.pitcherRepository.findOne(request.params.id);
+    return await this.pitcherRepository.findOne(request.params.id);
   }
 
   async save(request: Request, response: Response, next: NextFunction) {
-    return this.pitcherRepository.save(request.body);
+    return await this.pitcherRepository.save(request.body);
   }
 
   async remove(request: Request, response: Response, next: NextFunction) {

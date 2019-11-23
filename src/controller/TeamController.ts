@@ -5,18 +5,36 @@ import { User } from '../entity/User';
 import { TeamData } from '../entity/TeamData';
 import { Player } from '../entity/Player';
 import { Pitcher } from '../entity/Pitcher';
+import { BatterKind, BattingData } from '../entity/BattingData';
+import { PitchingData } from '../entity/PitchingData';
+import { CurrentController } from './CurrentController';
 
 export class TeamController {
-
   private teamRepository = getRepository(Team);
   private userRepository = getRepository(User);
+  private times: number;
 
+  /**
+   * Get all team data
+   * @param request
+   * @param response
+   * @param next
+   */
   async all(request: Request, response: Response, next: NextFunction) {
-    return this.teamRepository.find();
+    return await this.teamRepository.find({relations: ['user']});
   }
 
+  /**
+   * Get a team data
+   * @param request
+   * @param response
+   * @param next
+   */
   async one(request: Request, response: Response, next: NextFunction) {
-    return this.teamRepository.findOne(request.params.id, {relations: ['teamData', 'userId']});
+    return await this.teamRepository.findOne(
+      request.params.id,
+      {relations: ['teamData', 'user', 'players', 'pitchers']}
+    );
   }
 
   /**
@@ -26,6 +44,8 @@ export class TeamController {
    * @param next
    */
   async save(request: Request, response: Response, next: NextFunction) {
+    this.times = await this._getCurrentTimes(request, response, next);
+
     const team = this._getRequestedTeam(request);
     team.teamData = this._getRequestedTeamData(request);
     team.user = this._getRequestedUser(request);
@@ -65,7 +85,7 @@ export class TeamController {
   _getRequestedTeamData(request: Request) {
     const teamData = new TeamData();
 
-    teamData.times = request.body.times || 1; // TODO: DB から取得するように修正する
+    teamData.times = this.times;
     teamData.win = request.body.win || 0;
     teamData.lose = request.body.lose || 0;
     teamData.winContinue = request.body.winContinue || 0;
@@ -114,6 +134,8 @@ export class TeamController {
       pitcher.change = pitcherData.change;
       pitcher.control = pitcherData.control;
       pitcher.defense = pitcherData.defense;
+      pitcher.pitchingData = this._generatePitchingData();
+      pitcher.battingData = this._generateBattingData('pitcher');
 
       pitchers.push(pitcher);
     }
@@ -121,7 +143,28 @@ export class TeamController {
     return pitchers;
   }
 
-  _getPlayerData(playerData, index) {
+  _generatePitchingData() {
+    const pitchingData: PitchingData[] = [];
+
+    const pitching = new PitchingData();
+    pitching.times = this.times;
+    pitchingData.push(pitching);
+
+    return pitchingData;
+  }
+
+  _generateBattingData(kind: string) {
+    const battingData: BattingData[] = [];
+
+    const batting = new BattingData();
+    batting.times = this.times;
+    batting.batterKind = kind === 'player' ? BatterKind.PLAYER : BatterKind.PITCHER;
+    battingData.push(batting);
+
+    return battingData;
+  }
+
+  _getPlayerData(playerData: any, index: number) {
     const player = new Player();
 
     player.name = playerData.playerName;
@@ -131,7 +174,14 @@ export class TeamController {
     player.meet = playerData.meet;
     player.run = playerData.run;
     player.defense = playerData.defense;
+    player.battingData = this._generateBattingData('player');
 
     return player;
+  }
+
+  async _getCurrentTimes(request: Request, response: Response, next: NextFunction) {
+    const current = new CurrentController();
+    const currentData = await current.get(request, response, next);
+    return currentData[0].times;
   }
 }
