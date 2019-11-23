@@ -5,11 +5,14 @@ import { User } from '../entity/User';
 import { TeamData } from '../entity/TeamData';
 import { Player } from '../entity/Player';
 import { Pitcher } from '../entity/Pitcher';
+import { BatterKind, BattingData } from '../entity/BattingData';
+import { PitchingData } from '../entity/PitchingData';
 import { CurrentController } from './CurrentController';
 
 export class TeamController {
   private teamRepository = getRepository(Team);
   private userRepository = getRepository(User);
+  private times: number;
 
   /**
    * Get all team data
@@ -41,15 +44,13 @@ export class TeamController {
    * @param next
    */
   async save(request: Request, response: Response, next: NextFunction) {
+    this.times = await this._getCurrentTimes(request, response, next);
+
     const team = this._getRequestedTeam(request);
     team.teamData = this._getRequestedTeamData(request);
     team.user = this._getRequestedUser(request);
     team.players = this._getRequestedPlayer(request);
     team.pitchers = this._getRequestedPitcher(request);
-
-    if (team.teamData.times === 0) {
-      team.teamData.times = await this._getCurrentTimes(request, response, next);
-    }
 
     return await this.teamRepository.save(team);
   }
@@ -84,7 +85,7 @@ export class TeamController {
   _getRequestedTeamData(request: Request) {
     const teamData = new TeamData();
 
-    teamData.times = request.body.times || 0;
+    teamData.times = this.times;
     teamData.win = request.body.win || 0;
     teamData.lose = request.body.lose || 0;
     teamData.winContinue = request.body.winContinue || 0;
@@ -133,6 +134,8 @@ export class TeamController {
       pitcher.change = pitcherData.change;
       pitcher.control = pitcherData.control;
       pitcher.defense = pitcherData.defense;
+      pitcher.pitchingData = this._generatePitchingData();
+      pitcher.battingData = this._generateBattingData('pitcher');
 
       pitchers.push(pitcher);
     }
@@ -140,7 +143,28 @@ export class TeamController {
     return pitchers;
   }
 
-  _getPlayerData(playerData, index) {
+  _generatePitchingData() {
+    const pitchingData: PitchingData[] = [];
+
+    const pitching = new PitchingData();
+    pitching.times = this.times;
+    pitchingData.push(pitching);
+
+    return pitchingData;
+  }
+
+  _generateBattingData(kind: string) {
+    const battingData: BattingData[] = [];
+
+    const batting = new BattingData();
+    batting.times = this.times;
+    batting.batterKind = kind === 'player' ? BatterKind.PLAYER : BatterKind.PITCHER;
+    battingData.push(batting);
+
+    return battingData;
+  }
+
+  _getPlayerData(playerData: any, index: number) {
     const player = new Player();
 
     player.name = playerData.playerName;
@@ -150,6 +174,7 @@ export class TeamController {
     player.meet = playerData.meet;
     player.run = playerData.run;
     player.defense = playerData.defense;
+    player.battingData = this._generateBattingData('player');
 
     return player;
   }

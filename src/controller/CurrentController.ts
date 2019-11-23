@@ -21,6 +21,12 @@ export class CurrentController {
     });
   }
 
+  /**
+   * Save a data to current_data table
+   * @param request
+   * @param response
+   * @param next
+   */
   async save(request: Request, response: Response, next: NextFunction) {
     const currentData = new CurrentData();
 
