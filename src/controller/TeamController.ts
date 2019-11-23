@@ -7,16 +7,27 @@ import { Player } from '../entity/Player';
 import { Pitcher } from '../entity/Pitcher';
 
 export class TeamController {
-
   private teamRepository = getRepository(Team);
   private userRepository = getRepository(User);
 
+  /**
+   * Get all team data
+   * @param request
+   * @param response
+   * @param next
+   */
   async all(request: Request, response: Response, next: NextFunction) {
-    return this.teamRepository.find({relations: ['user']});
+    return await this.teamRepository.find({relations: ['user']});
   }
 
+  /**
+   * Get a team data
+   * @param request
+   * @param response
+   * @param next
+   */
   async one(request: Request, response: Response, next: NextFunction) {
-    return this.teamRepository.findOne(
+    return await this.teamRepository.findOne(
       request.params.id,
       {relations: ['teamData', 'user', 'players', 'pitchers']}
     );
