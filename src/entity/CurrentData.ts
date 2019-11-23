@@ -8,7 +8,7 @@ export class CurrentData {
 
   @Index('idx_times', {unique: true})
   @Column({type: 'tinyint', unsigned: true})
-  times: string;
+  times: number;
 
   @Column({name: 'start_time'})
   startTime: Date;

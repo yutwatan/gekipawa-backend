@@ -5,6 +5,7 @@ import { User } from '../entity/User';
 import { TeamData } from '../entity/TeamData';
 import { Player } from '../entity/Player';
 import { Pitcher } from '../entity/Pitcher';
+import { CurrentController } from './CurrentController';
 
 export class TeamController {
   private teamRepository = getRepository(Team);
@@ -46,6 +47,10 @@ export class TeamController {
     team.players = this._getRequestedPlayer(request);
     team.pitchers = this._getRequestedPitcher(request);
 
+    if (team.teamData.times === 0) {
+      team.teamData.times = await this._getCurrentTimes(request, response, next);
+    }
+
     return await this.teamRepository.save(team);
   }
 
@@ -79,7 +84,7 @@ export class TeamController {
   _getRequestedTeamData(request: Request) {
     const teamData = new TeamData();
 
-    teamData.times = request.body.times || 1; // TODO: DB から取得するように修正する
+    teamData.times = request.body.times || 0;
     teamData.win = request.body.win || 0;
     teamData.lose = request.body.lose || 0;
     teamData.winContinue = request.body.winContinue || 0;
@@ -147,5 +152,11 @@ export class TeamController {
     player.defense = playerData.defense;
 
     return player;
+  }
+
+  async _getCurrentTimes(request: Request, response: Response, next: NextFunction) {
+    const current = new CurrentController();
+    const currentData = await current.get(request, response, next);
+    return currentData[0].times;
   }
 }
