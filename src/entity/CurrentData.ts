@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index  } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+  OneToOne,
+  JoinColumn
+} from 'typeorm';
+import { Team } from './Team';
 
 @Entity()
 export class CurrentData {
@@ -15,6 +25,13 @@ export class CurrentData {
 
   @Column({name: 'end_time'})
   endTime: Date;
+
+  @OneToOne(type => Team, team => team.champion)
+  @JoinColumn({name: 'champion_team_id'})
+  team: Team;
+
+  @Column({name: 'continue_win'})
+  continueWin: number;
 
   @Column({default: true})
   active: boolean;

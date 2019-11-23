@@ -13,6 +13,7 @@ import { User } from './User';
 import { TeamData } from './TeamData';
 import { Player } from './Player';
 import { Pitcher } from './Pitcher';
+import { CurrentData } from './CurrentData';
 
 @Entity()
 export class Team {
@@ -58,6 +59,9 @@ export class Team {
 
   @OneToOne(type => TeamData, teamData => teamData.team, { cascade: true })
   teamData: TeamData;
+
+  @OneToOne(type => CurrentData, currentData => currentData.team)
+  champion: CurrentData;
 
   @OneToMany(type => Player, player => player.team, { cascade: true })
   players: Player[];

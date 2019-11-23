@@ -32,6 +32,9 @@ export class BattingData {
   @JoinColumn({name: 'batter_id'})
   batterId: number;
 
+  @Column({type: 'smallint', default: 0, comment: '打数'})
+  atBat: number;
+
   @Column({type: 'smallint', default: 0})
   hit: number;
 

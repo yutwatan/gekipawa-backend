@@ -31,6 +31,12 @@ export class TeamData {
   @Column({name: 'lose_score', type: 'smallint', default: 0})
   loseScore: number;
 
+  @Column({type: 'smallint', default: 0, comment: '打数'})
+  atBat: number;
+
+  @Column({type: 'smallint', default: 0})
+  hit: number;
+
   @Column({type: 'smallint', default: 0})
   hr: number;
 
@@ -42,6 +48,12 @@ export class TeamData {
 
   @Column({type: 'smallint', default: 0})
   error: number;
+
+  @Column({name: 'out_count', type: 'smallint', default: 0})
+  outCount: number;
+
+  @Column({name: 'loss_score', type: 'smallint', default: 0})
+  lossScore: number;
 
   @Column({default: true})
   active: boolean;

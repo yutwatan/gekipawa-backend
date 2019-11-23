@@ -14,6 +14,7 @@ export class CurrentController {
    */
   async get(request: Request, response: Response, next: NextFunction) {
     return await this.currentRepository.find({
+      relations: ['team', 'team.user', 'team.pitchers', 'team.pitchers.pitchingData'],
       order: {
         times: 'DESC'
       },

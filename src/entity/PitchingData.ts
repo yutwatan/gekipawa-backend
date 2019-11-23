@@ -45,6 +45,9 @@ export class PitchingData {
   @Column({type: 'smallint', default: 0})
   error: number;
 
+  @Column({name: 'out_count', type: 'smallint', default: 0})
+  outCount: number;
+
   @Column({name: 'loss_score', type: 'smallint', default: 0})
   lossScore: number;
 
