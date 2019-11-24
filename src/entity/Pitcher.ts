@@ -6,7 +6,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
-  ManyToOne, OneToMany
+  ManyToOne,
+  OneToMany
 } from 'typeorm';
 import { Team } from './Team';
 import { PitchingData } from './PitchingData';

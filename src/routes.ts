@@ -4,6 +4,7 @@ import { PlayerController } from './controller/PlayerController';
 import { PitcherController } from './controller/PitcherController';
 import { CurrentController } from './controller/CurrentController';
 import { GameLogController } from './controller/GameLogController';
+import { CommentNewsController } from './controller/CommentNewsController';
 
 export const Routes = [
   // Current data
@@ -92,6 +93,32 @@ export const Routes = [
     route: '/gameLog',
     controller: GameLogController,
     action: 'save'
+  },
+
+  // Comment & News
+  {
+    method: 'get',
+    route: '/commentNews',
+    controller: CommentNewsController,
+    action: 'all'
+  },
+  {
+    method: 'get',
+    route: '/commentNews/:id',
+    controller: CommentNewsController,
+    action: 'one'
+  },
+  {
+    method: 'post',
+    route: '/commentNews',
+    controller: CommentNewsController,
+    action: 'save'
+  },
+  {
+    method: 'delete',
+    route: '/commentNews/:id',
+    controller: CommentNewsController,
+    action: 'remove'
   },
 
   // Player

@@ -63,6 +63,7 @@ export class TeamController {
    * @param response
    * @param next
    */
+  // TODO: 物理削除はしない。active フラグを落とすだけにする。
   async remove(request: Request, response: Response, next: NextFunction) {
     const removeTeam = await this.teamRepository.findOne(request.params.id);
     const removeUser = await this.userRepository.findOne(removeTeam.user);

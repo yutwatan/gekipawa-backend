@@ -6,9 +6,11 @@ import {
   UpdateDateColumn,
   Index,
   ManyToOne,
-  JoinColumn
+  JoinColumn,
+  OneToMany
 } from 'typeorm';
 import { Team } from './Team';
+import { CommentNews } from './CommentNews';
 
 @Entity()
 export class GameLog {
@@ -45,4 +47,7 @@ export class GameLog {
 
   @UpdateDateColumn()
   updated: Date;
+
+  @OneToMany(type => CommentNews, commentNews => commentNews.gameLog)
+  comment: CommentNews;
 }
