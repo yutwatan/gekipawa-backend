@@ -3,6 +3,7 @@ import { TeamController } from "./controller/TeamController";
 import { PlayerController } from './controller/PlayerController';
 import { PitcherController } from './controller/PitcherController';
 import { CurrentController } from './controller/CurrentController';
+import { GameLogController } from './controller/GameLogController';
 
 export const Routes = [
   // Current data
@@ -71,6 +72,26 @@ export const Routes = [
     route: '/team/:id',
     controller: TeamController,
     action: 'remove'
+  },
+
+  // Game Log
+  {
+    method: 'get',
+    route: '/gameLogs',
+    controller: GameLogController,
+    action: 'all'
+  },
+  {
+    method: 'get',
+    route: '/gameLog/:id',
+    controller: GameLogController,
+    action: 'one'
+  },
+  {
+    method: 'post',
+    route: '/gameLog',
+    controller: GameLogController,
+    action: 'save'
   },
 
   // Player
