@@ -14,6 +14,7 @@ import { TeamData } from './TeamData';
 import { Player } from './Player';
 import { Pitcher } from './Pitcher';
 import { CurrentData } from './CurrentData';
+import { GameLog } from './GameLog';
 
 @Entity()
 export class Team {
@@ -68,4 +69,10 @@ export class Team {
 
   @OneToMany(type => Pitcher, pitcher => pitcher.team, { cascade: true })
   pitchers: Pitcher[];
+
+  @OneToMany(type => GameLog, gameLog => gameLog.topTeam)
+  topTeam: GameLog[];
+
+  @OneToMany(type => GameLog, gameLog => gameLog.botTeam)
+  botTeam: GameLog[];
 }
