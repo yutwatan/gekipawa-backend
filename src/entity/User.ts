@@ -11,7 +11,7 @@ export class User {
   @Column({length: 8})
   name: string;
 
-  @Column({length: 16})
+  @Column({length: 64})
   password: string;
 
   @Column({default: true})
