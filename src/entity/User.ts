@@ -1,5 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index, OneToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+  OneToOne,
+  OneToMany
+} from 'typeorm';
 import { Team } from './Team';
+import { CommentNews } from './CommentNews';
 
 @Entity()
 export class User {
@@ -25,4 +35,7 @@ export class User {
 
   @OneToOne(type => Team, team => team.user)
   team: Team;
+
+  @OneToMany(type => CommentNews, commentNews => commentNews.user)
+  comment: CommentNews;
 }
