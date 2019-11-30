@@ -35,7 +35,16 @@ export class TeamController {
   async one(request: Request, response: Response, next: NextFunction) {
     return await this.teamRepository.findOne(
       request.params.id,
-      {relations: ['teamData', 'user', 'players', 'pitchers']}
+      {
+        relations: [
+          'teamData',
+          'user',
+          'players',
+          'players.battingData',
+          'pitchers',
+          'pitchers.pitchingData',
+        ]
+      }
     );
   }
 
