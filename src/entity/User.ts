@@ -2,17 +2,16 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
   Index,
   OneToOne,
   OneToMany
 } from 'typeorm';
+import { BaseColumn } from './BaseColumn';
 import { Team } from './Team';
 import { CommentNews } from './CommentNews';
 
 @Entity()
-export class User {
+export class User extends BaseColumn {
 
   @PrimaryGeneratedColumn({unsigned: true})
   id: number;
@@ -24,18 +23,10 @@ export class User {
   @Column({length: 64})
   password: string;
 
-  @Column({default: true})
-  active: boolean;
-
-  @CreateDateColumn()
-  created: Date;
-
-  @UpdateDateColumn()
-  updated: Date;
-
   @OneToOne(type => Team, team => team.user)
   team: Team;
 
   @OneToMany(type => CommentNews, commentNews => commentNews.user)
   comment: CommentNews;
+
 }

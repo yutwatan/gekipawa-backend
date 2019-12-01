@@ -3,15 +3,14 @@ import {
   Column,
   PrimaryGeneratedColumn,
   Index,
-  CreateDateColumn,
-  UpdateDateColumn,
   JoinColumn,
   ManyToOne
 } from 'typeorm';
+import { BaseColumn } from './BaseColumn';
 import { Pitcher } from './Pitcher';
 
 @Entity()
-export class PitchingData {
+export class PitchingData extends BaseColumn {
 
   @PrimaryGeneratedColumn({type: 'bigint', unsigned: true})
   id: number;
@@ -51,12 +50,4 @@ export class PitchingData {
   @Column({name: 'loss_score', type: 'smallint', default: 0})
   lossScore: number;
 
-  @Column({default: true})
-  active: boolean;
-
-  @CreateDateColumn()
-  created: Date;
-
-  @UpdateDateColumn()
-  updated: Date;
 }

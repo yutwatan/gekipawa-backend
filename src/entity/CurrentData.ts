@@ -2,16 +2,15 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
   Index,
   OneToOne,
   JoinColumn
 } from 'typeorm';
+import { BaseColumn } from './BaseColumn';
 import { Team } from './Team';
 
 @Entity()
-export class CurrentData {
+export class CurrentData extends BaseColumn {
 
   @PrimaryGeneratedColumn({unsigned: true})
   id: number;
@@ -33,12 +32,4 @@ export class CurrentData {
   @Column({name: 'continue_win'})
   continueWin: number;
 
-  @Column({default: true})
-  active: boolean;
-
-  @CreateDateColumn()
-  created: Date;
-
-  @UpdateDateColumn()
-  updated: Date;
 }

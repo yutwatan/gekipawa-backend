@@ -2,22 +2,17 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
   Index,
   ManyToOne,
   JoinColumn
 } from 'typeorm';
+import { BaseColumn } from './BaseColumn';
 import { Player } from './Player';
-
-export enum BatterKind {
-  PLAYER  = '野手',
-  PITCHER = '投手',
-}
+import { Pitcher } from './Pitcher';
 
 @Entity()
-@Index('idx_batter_kind_batter_id', ['batterKind', 'batterId'])
-export class BattingData {
+export class BattingData extends BaseColumn {
+
   @PrimaryGeneratedColumn({type: 'bigint', unsigned: true})
   id: number;
 
@@ -25,12 +20,15 @@ export class BattingData {
   @Column()
   times: number;
 
-  @Column({name: 'batter_kind', type: 'enum', enum: BatterKind, default: BatterKind.PLAYER})
-  batterKind: BatterKind;
+  @Index('idx_player_id')
+  @ManyToOne(type => Player, player => player.battingData, { nullable: true })
+  @JoinColumn({name: 'player_id'})
+  playerId: number;
 
-  @ManyToOne(type => Player, player => player.battingData)
-  @JoinColumn({name: 'batter_id'})
-  batterId: number;
+  @Index('idx_pitcher_id')
+  @ManyToOne(type => Pitcher, pitcher => pitcher.battingData, { nullable: true })
+  @JoinColumn({name: 'pitcher_id'})
+  pitcherId: number;
 
   @Column({type: 'smallint', default: 0, comment: '打数'})
   atBat: number;
@@ -59,12 +57,4 @@ export class BattingData {
   @Column({type: 'smallint', default: 0})
   error: number;
 
-  @Column({default: true})
-  active: boolean;
-
-  @CreateDateColumn()
-  created: Date;
-
-  @UpdateDateColumn()
-  updated: Date;
 }

@@ -2,21 +2,16 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
   ManyToOne,
   JoinColumn
 } from 'typeorm';
+import { BaseColumn } from './BaseColumn';
+import { CommentKind } from './Enum';
 import { User } from './User';
 import { GameLog } from './GameLog';
 
-export enum CommentKind {
-  COMMENT = 'comment',
-  NEWS = 'news',
-}
-
 @Entity()
-export class CommentNews {
+export class CommentNews extends BaseColumn {
 
   @PrimaryGeneratedColumn({type: 'bigint', unsigned: true})
   id: number;
@@ -38,12 +33,4 @@ export class CommentNews {
   @JoinColumn({name: 'game_log_id'})
   gameLog: GameLog;
 
-  @Column({default: true})
-  active: boolean;
-
-  @CreateDateColumn()
-  created: Date;
-
-  @UpdateDateColumn()
-  updated: Date;
 }

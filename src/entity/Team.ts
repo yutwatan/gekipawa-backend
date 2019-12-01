@@ -2,13 +2,12 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
   Index,
   OneToOne,
   JoinColumn,
   OneToMany
 } from 'typeorm';
+import { BaseColumn } from './BaseColumn';
 import { User } from './User';
 import { TeamData } from './TeamData';
 import { Player } from './Player';
@@ -17,7 +16,7 @@ import { CurrentData } from './CurrentData';
 import { GameLog } from './GameLog';
 
 @Entity()
-export class Team {
+export class Team extends BaseColumn {
 
   @PrimaryGeneratedColumn({unsigned: true})
   id: number;
@@ -48,15 +47,6 @@ export class Team {
 
   @Column({name: 'camp_times', type: 'tinyint', default: 5})
   campTimes: number;
-
-  @Column({default: true})
-  active: boolean;
-
-  @CreateDateColumn()
-  created: Date;
-
-  @UpdateDateColumn()
-  updated: Date;
 
   @OneToOne(type => TeamData, teamData => teamData.team, { cascade: true })
   teamData: TeamData;

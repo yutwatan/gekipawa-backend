@@ -5,7 +5,7 @@ import { User } from '../entity/User';
 import { TeamData } from '../entity/TeamData';
 import { Player } from '../entity/Player';
 import { Pitcher } from '../entity/Pitcher';
-import { BatterKind, BattingData } from '../entity/BattingData';
+import { BattingData } from '../entity/BattingData';
 import { PitchingData } from '../entity/PitchingData';
 import { CurrentController } from './CurrentController';
 
@@ -43,7 +43,8 @@ export class TeamController {
           'players.battingData',
           'pitchers',
           'pitchers.pitchingData',
-        ]
+          'pitchers.battingData',
+        ],
       }
     );
   }
@@ -170,7 +171,7 @@ export class TeamController {
 
     const batting = new BattingData();
     batting.times = this.times;
-    batting.batterKind = kind === 'player' ? BatterKind.PLAYER : BatterKind.PITCHER;
+    //batting.batterKind = kind === 'player' ? BatterKind.PLAYER : BatterKind.PITCHER;
     battingData.push(batting);
 
     return battingData;

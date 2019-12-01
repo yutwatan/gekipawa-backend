@@ -2,38 +2,19 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
   Index,
   ManyToOne,
   OneToMany,
   JoinColumn
 } from 'typeorm';
+import { BaseColumn } from './BaseColumn';
+import { Condition, Position } from './Enum';
 import { Team } from './Team';
 import { BattingData } from './BattingData';
 
-export enum Position {
-  CATCHER   = '捕',
-  FIRST     = '一',
-  SECOND    = '二',
-  THIRD     = '三',
-  SHORTSTOP = '遊',
-  LEFT      = '左',
-  CENTER    = '中',
-  RIGHT     = '右',
-}
-
-export enum Condition {
-  AWFUL     = 1,
-  BAD       = 2,
-  NORMAL    = 3,
-  GOOD      = 4,
-  EXCELLENT = 5,
-}
-
 @Entity()
 @Index('idx_team_id_order', ['team', 'order'])
-export class Player {
+export class Player extends BaseColumn {
 
   @PrimaryGeneratedColumn({unsigned: true})
   id: number;
@@ -53,7 +34,7 @@ export class Player {
   position: Position;
 
   @Column('enum', {enum: Condition, default: Condition.NORMAL})
-  condition: number;
+  condition: Condition;
 
   @Column({type: 'tinyint', default: 5})
   power: number;
@@ -67,15 +48,7 @@ export class Player {
   @Column({type: 'tinyint', default: 5})
   defense: number;
 
-  @Column({default: true})
-  active: boolean;
-
-  @CreateDateColumn()
-  created: Date;
-
-  @UpdateDateColumn()
-  updated: Date;
-
-  @OneToMany(type => BattingData, battingData => battingData.batterId, {cascade: true})
+  @OneToMany(type => BattingData, battingData => battingData.playerId, {cascade: true})
   battingData: BattingData[];
+
 }
