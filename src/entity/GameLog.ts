@@ -2,18 +2,17 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
   Index,
   ManyToOne,
   JoinColumn,
   OneToMany
 } from 'typeorm';
+import { BaseColumn } from './BaseColumn';
 import { Team } from './Team';
 import { CommentNews } from './CommentNews';
 
 @Entity()
-export class GameLog {
+export class GameLog extends BaseColumn {
 
   @PrimaryGeneratedColumn({type: 'bigint', unsigned: true})
   id: number;
@@ -38,15 +37,6 @@ export class GameLog {
 
   @Column({name: 'play_date'})
   playDate: Date;
-
-  @Column({default: true})
-  active: boolean;
-
-  @CreateDateColumn()
-  created: Date;
-
-  @UpdateDateColumn()
-  updated: Date;
 
   @OneToMany(type => CommentNews, commentNews => commentNews.gameLog)
   comment: CommentNews;

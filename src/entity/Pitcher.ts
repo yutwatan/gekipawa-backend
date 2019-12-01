@@ -3,20 +3,19 @@ import {
   Column,
   PrimaryGeneratedColumn,
   JoinColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
   Index,
   ManyToOne,
   OneToMany
 } from 'typeorm';
+import { BaseColumn } from './BaseColumn';
+import { Condition } from './Enum';
 import { Team } from './Team';
 import { PitchingData } from './PitchingData';
 import { BattingData } from './BattingData';
-import { Condition } from './Player';
 
 @Entity()
 @Index('idx_team_id_order', ['team', 'order'])
-export class Pitcher {
+export class Pitcher extends BaseColumn {
 
   @PrimaryGeneratedColumn({unsigned: true})
   id: number;
@@ -33,7 +32,7 @@ export class Pitcher {
   order: number;
 
   @Column('enum', {enum: Condition, default: Condition.NORMAL})
-  condition: number;
+  condition: Condition;
 
   @Column({type: 'tinyint', default: 5})
   speed: number;
@@ -47,19 +46,10 @@ export class Pitcher {
   @Column({type: 'tinyint', default: 5})
   defense: number;
 
-  @Column({default: true})
-  active: boolean;
-
-  @CreateDateColumn()
-  created: Date;
-
-  @UpdateDateColumn()
-  updated: Date;
-
   @OneToMany(type => PitchingData, pitchingData => pitchingData.pitcherId, {cascade: true})
   pitchingData: PitchingData[];
 
-  @OneToMany(type => BattingData, battingData => battingData.batterId, {cascade: true})
+  @OneToMany(type => BattingData, battingData => battingData.pitcherId, {cascade: true})
   battingData: BattingData[];
 }
 

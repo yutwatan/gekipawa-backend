@@ -1,9 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index, OneToOne, JoinColumn } from 'typeorm';
+import { BaseColumn } from './BaseColumn';
 import { Team } from './Team';
 
 @Entity()
 @Index('idx_times_team', ['times', 'team'], {unique: true})
-export class TeamData {
+export class TeamData extends BaseColumn {
 
   @PrimaryGeneratedColumn({type: 'bigint', unsigned: true})
   id: number;
@@ -55,12 +56,4 @@ export class TeamData {
   @Column({name: 'loss_score', type: 'smallint', default: 0})
   lossScore: number;
 
-  @Column({default: true})
-  active: boolean;
-
-  @CreateDateColumn()
-  created: Date;
-
-  @UpdateDateColumn()
-  updated: Date;
 }
