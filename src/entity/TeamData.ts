@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, Index, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseColumn } from './BaseColumn';
 import { Team } from './Team';
 
@@ -13,7 +13,7 @@ export class TeamData extends BaseColumn {
   @Column({unsigned: true})
   times: number;
 
-  @OneToOne(type => Team, team => team.teamData)
+  @ManyToOne(type => Team, team => team.teamData)
   @JoinColumn({name: 'team_id'})
   team: Team;
 

@@ -45,11 +45,11 @@ export class Team extends BaseColumn {
   @Column({name: 'type_mind', type: 'tinyint', default: 5})
   typeMind: number;
 
-  @Column({name: 'camp_times', type: 'tinyint', default: 5})
+  @Column({name: 'camp_times', type: 'tinyint', default: 0})
   campTimes: number;
 
-  @OneToOne(type => TeamData, teamData => teamData.team, { cascade: true })
-  teamData: TeamData;
+  @OneToMany(type => TeamData, teamData => teamData.team, { cascade: true })
+  teamData: TeamData[];
 
   @OneToOne(type => CurrentData, currentData => currentData.team)
   champion: CurrentData;
