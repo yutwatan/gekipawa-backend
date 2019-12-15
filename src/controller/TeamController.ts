@@ -34,6 +34,21 @@ export class TeamController {
    * @param next
    */
   async one(request: Request, response: Response, next: NextFunction) {
+    let times: number;
+
+    if (request.query.hasOwnProperty('times')) {
+      times = request.query.times;
+    }
+
+    return await this.getTeamData(request.params.id, times);
+  }
+
+  /**
+   * Get a team data for model code
+   * @param teamId
+   * @param times
+   */
+  async getTeamData(teamId: number, times?: number) {
     const options: FindOneOptions = {
       relations: [
         'teamData',
@@ -48,11 +63,11 @@ export class TeamController {
       ],
     };
 
-    if (request.query.hasOwnProperty('times')) {
-      options.where = { 'teamData.times': request.query.times };
+    if (times !== undefined) {
+      options.where = { 'teamData.times': times };
     }
 
-    return await this.teamRepository.findOne(request.params.id, options);
+    return await this.teamRepository.findOne(teamId, options);
   }
 
   /**

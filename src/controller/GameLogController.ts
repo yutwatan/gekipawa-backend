@@ -2,6 +2,7 @@ import { FindManyOptions, getRepository } from 'typeorm';
 import { NextFunction, Request, Response } from 'express';
 import { GameLog } from '../entity/GameLog';
 import { CurrentController } from './CurrentController';
+import { Game } from '../model/Game';
 
 export class GameLogController {
 
@@ -34,12 +35,20 @@ export class GameLogController {
   async save(request: Request, response: Response, next: NextFunction) {
     const current = new CurrentController();
     const currentData = await current.get(request, response, next);
+    const times = currentData[0].times;
+    const topTeamId = request.body.topTeamId;
+    const botTeamId = request.body.botTeamId;
 
     const gameLog = new GameLog();
 
-    gameLog.times = currentData[0].times;
-    gameLog.topTeam = request.body.topTeamId;
-    gameLog.botTeam = request.body.botTeamId;
+    gameLog.times = times;
+    gameLog.topTeam = topTeamId;
+    gameLog.botTeam = botTeamId;
+
+    // TODO: ここで試合の処理をはさみ、スコアはそこから取る
+    const game = new Game(times, topTeamId, botTeamId);
+    const gameData = await game.playBall();
+
     gameLog.topScore = request.body.topScore;
     gameLog.botScore = request.body.botScore;
     gameLog.playDate = request.body.playDate; // TODO: ここで時間とってもいい
