@@ -28,7 +28,7 @@ import { Routes } from './routes';
             result.then(result =>
               result !== null && result !== undefined
                 ? res.send(result)
-                : undefined
+                : res.sendStatus(404)
             );
           }
           else if (result !== null && result !== undefined) {

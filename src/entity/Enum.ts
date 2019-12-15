@@ -7,7 +7,7 @@ export enum Position {
   LEFT      = '左',
   CENTER    = '中',
   RIGHT     = '右',
-  BENCH     = '補欠',
+  BENCH     = '控',
 }
 
 export enum Condition {

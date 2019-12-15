@@ -1,4 +1,4 @@
-import { getRepository } from 'typeorm';
+import { FindOneOptions, getRepository } from 'typeorm';
 import { NextFunction, Request, Response } from 'express';
 import { Team } from '../entity/Team';
 import { User } from '../entity/User';
@@ -8,6 +8,7 @@ import { Pitcher } from '../entity/Pitcher';
 import { BattingData } from '../entity/BattingData';
 import { PitchingData } from '../entity/PitchingData';
 import { CurrentController } from './CurrentController';
+import { Position } from '../entity/Enum';
 
 export class TeamController {
   private teamRepository = getRepository(Team);
@@ -33,20 +34,25 @@ export class TeamController {
    * @param next
    */
   async one(request: Request, response: Response, next: NextFunction) {
-    return await this.teamRepository.findOne(
-      request.params.id,
-      {
-        relations: [
-          'teamData',
-          'user',
-          'players',
-          'players.battingData',
-          'pitchers',
-          'pitchers.pitchingData',
-          'pitchers.battingData',
-        ],
-      }
-    );
+    const options: FindOneOptions = {
+      relations: [
+        'teamData',
+        'user',
+        'players',
+        'players.battingData',
+        'pitchers',
+        'pitchers.pitchingData',
+        'pitchers.battingData',
+        'topTeam',
+        'botTeam',
+      ],
+    };
+
+    if (request.query.hasOwnProperty('times')) {
+      options.where = { 'teamData.times': request.query.times };
+    }
+
+    return await this.teamRepository.findOne(request.params.id, options);
   }
 
   /**
@@ -82,7 +88,7 @@ export class TeamController {
     await this.teamRepository.remove(removeTeam);
   }
 
-  _getRequestedTeam(request: Request) {
+  _getRequestedTeam(request: Request): Team {
     const team = new Team();
 
     team.name = request.body.teamName;
@@ -95,7 +101,8 @@ export class TeamController {
     return team;
   }
 
-  _getRequestedTeamData(request: Request) {
+  _getRequestedTeamData(request: Request): TeamData[] {
+    let teamDataList: TeamData[] = [];
     const teamData = new TeamData();
 
     teamData.times = this.times;
@@ -109,10 +116,12 @@ export class TeamController {
     teamData.strikeOut = request.body.strikeOut || 0;
     teamData.error = request.body.error || 0;
 
-    return teamData;
+    teamDataList.push(teamData);
+
+    return teamDataList;
   }
 
-  _getRequestedUser(request: Request) {
+  _getRequestedUser(request: Request): User {
     const user = new User();
 
     user.name = request.body.ownerName;
@@ -121,7 +130,7 @@ export class TeamController {
     return user;
   }
 
-  _getRequestedPlayer(request: Request) {
+  _getRequestedPlayer(request: Request): Player[] {
     let players: Player[] = [];
 
     for (let [i, playerData] of request.body.players.entries()) {
@@ -135,7 +144,7 @@ export class TeamController {
     return players;
   }
 
-  _getRequestedPitcher(request: Request) {
+  _getRequestedPitcher(request: Request): Pitcher[] {
     let pitchers: Pitcher[] = [];
 
     for (let [i, pitcherData] of request.body.pitchers.entries()) {
@@ -148,7 +157,7 @@ export class TeamController {
       pitcher.control = pitcherData.control;
       pitcher.defense = pitcherData.defense;
       pitcher.pitchingData = this._generatePitchingData();
-      pitcher.battingData = this._generateBattingData('pitcher');
+      pitcher.battingData = this._generateBattingData();
 
       pitchers.push(pitcher);
     }
@@ -156,7 +165,7 @@ export class TeamController {
     return pitchers;
   }
 
-  _generatePitchingData() {
+  _generatePitchingData(): PitchingData[] {
     const pitchingData: PitchingData[] = [];
 
     const pitching = new PitchingData();
@@ -166,28 +175,27 @@ export class TeamController {
     return pitchingData;
   }
 
-  _generateBattingData(kind: string) {
+  _generateBattingData(): BattingData[] {
     const battingData: BattingData[] = [];
 
     const batting = new BattingData();
     batting.times = this.times;
-    //batting.batterKind = kind === 'player' ? BatterKind.PLAYER : BatterKind.PITCHER;
     battingData.push(batting);
 
     return battingData;
   }
 
-  _getPlayerData(playerData: any, index: number) {
+  _getPlayerData(playerData: any, index: number): Player {
     const player = new Player();
 
     player.name = playerData.playerName;
     player.order = index;
-    player.position = playerData.position;
+    player.position = index < 9 ? playerData.position : Position.BENCH;
     player.power = playerData.power;
     player.meet = playerData.meet;
     player.run = playerData.run;
     player.defense = playerData.defense;
-    player.battingData = this._generateBattingData('player');
+    player.battingData = this._generateBattingData();
 
     return player;
   }
