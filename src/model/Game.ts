@@ -1,7 +1,6 @@
-import { Team } from '../entity/Team';
-import { PlayMeta } from './play-meta';
 import { TeamController } from '../controller/TeamController';
 import { Inning } from './Inning';
+import { Team } from './Team';
 
 export class Game {
   private readonly times: number;
@@ -13,6 +12,7 @@ export class Game {
   private gameRec: any;
   private scoreBoard: any;
   private hitBoard: any;
+  private outBoard: any;
   private inningRecords: any;
   private score: any;
   private mental: number[];
@@ -25,6 +25,7 @@ export class Game {
     this.gameRec       = { top: [], bottom: [] };
     this.scoreBoard    = { top: [], bottom: [] };
     this.hitBoard      = { top: [], bottom: [] };
+    this.outBoard      = { top: [], bottom: [] };
     this.inningRecords = { top: [], bottom: [] };
     this.score         = { top: 0, bottom: 0 };
   }
@@ -39,8 +40,8 @@ export class Game {
     // データ取得
     const teamTop = new TeamController();
     const teamBot = new TeamController();
-    this.topTeam = await teamTop.getTeamData(this.topTeamId, this.times);
-    this.botTeam = await teamBot.getTeamData(this.topTeamId, this.times);
+    this.topTeam = new Team(await teamTop.getTeamData(this.topTeamId, this.times));
+    this.botTeam = new Team(await teamBot.getTeamData(this.botTeamId, this.times));
 
     // 試合開始（試合終了の条件になるまでループ）
     while (
@@ -63,6 +64,7 @@ export class Game {
       // イニング毎のデータを追加していく
       this.scoreBoard[offense].push(inning.score);
       this.hitBoard[offense].push(inning.hit);
+      this.outBoard[offense].push(inning.outCount);
       this.inningRecords[offense].push(inning);
 
       // 次のループ用

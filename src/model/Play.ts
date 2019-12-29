@@ -1,56 +1,105 @@
-import { PlayMeta } from './play-meta';
-import { Team } from '../entity/Team';
+import { Team } from './Team';
+import { Pitcher } from './Pitcher';
+import { Player } from './Player';
+import { Batter } from './Batter';
+import { IBatter, Motivation } from './IBatter';
 
 export class Play {
-  private motivation: any;
-  outFlg: boolean;
-  hit: boolean;
+  private offenseTeam: Team;
+  private defenseTeam: Team;
+  private motivation: Motivation;
+  runner: number;
+  firstRunner: Player;
+  pitcher: Pitcher;
+  steal: boolean;
+  stealPlayer: Player;
   getScore: number;
+  out: boolean;
+  error: boolean;
+  errorPlayer: Player;
+  wildPitch: boolean;
+  wildPitcher: Pitcher;
+  batter: IBatter;
+  batting: string;
+  hit: boolean;
+  hr: boolean;
+  batScore: number;
+  strikeOut: boolean;
+  fourBall: boolean;
+  bunt: boolean;
 
-  constructor() {
+  constructor(offenseTeam: Team, defenseTeam: Team) {
+    this.offenseTeam = offenseTeam;
+    this.defenseTeam = defenseTeam;
     this.motivation = { top: 0, bottom: 0 };
-    this.outFlg = false;
-    this.hit = false;
+    this.steal = false;
     this.getScore = 0;
+    this.out = false;
+    this.error = false;
+    this.wildPitch = false;
+    this.batting = '';
+    this.hit = false;
+    this.hr = false;
+    this.batScore = 0;
+    this.strikeOut = false;
+    this.fourBall = false;
+    this.bunt = false;
   }
 
-  doBatting(offenseTeam: Team, defenseTeam: Team, gameStatus: any): PlayMeta {
-    const batter = gameStatus.order === 9 ? offenseTeam.pitchers[0] : offenseTeam.players[gameStatus.order];
-    const runner = gameStatus.firstRunner;
-    const defender = defenseTeam.players;
+  /**
+   * バッティング（対戦）処理
+   *
+   * @param gameStatus 試合のメタ情報
+   */
+  doBatting(gameStatus: any): PlayMeta {
+    const offense = gameStatus.offense;
+    const defense = gameStatus.defense;
 
-    // 【仕様】点差が開くとモチベーション低下www
-    const scoreDiff = this.getScoreDiff();
-    if (Math.abs(scoreDiff) > 8) {
-      this.motivation.top = -2;
-      this.motivation.bottom = -1;
+    if (gameStatus.order === 9) {
+      this.batter = new Pitcher(this.offenseTeam.pitchers[0]);
     }
+    else {
+      this.batter = new Batter(this.offenseTeam.players[gameStatus.order]);
+    }
+    this.runner = gameStatus.runner;
+    this.firstRunner = gameStatus.firstRunner;
+    this.pitcher = this.defenseTeam.pitchers[0];
+    const defender = this.defenseTeam.players;
 
-    // バッターの能力値＆メンタル計算
-    const batterParams = this.getBatterParams(offenseTeam, batter, gameStatus);
+    // モチベーション設定
+    this.setMotivation(gameStatus.score, offense);
 
-    // ランナーの能力値（投手のときは -5）
-    const runnerParam = runner.order < 9 ? runner.run : -5;
+    // バッターの能力値＆メンタル更新
+    this.batter.updateBatterSkill(gameStatus, this.offenseTeam, this.motivation);
 
-    // TODO: ここから再開
+    // ランナーの能力値更新（投手のときは run = -5）
+    this.firstRunner.updateSkill();
 
-    // 守備チームの能力値
+    // 守備チームの能力値 TODO: ここも更新でいけるハズ・・・
+    const defenseTeamParams = this.defenseTeam.getDefenseParams(this.motivation[defense]);
+    const defensePosition = this.defenseTeam.getPlayersByPosition();
 
-    // 守備チームの投手の能力値
+    // 守備チームの投手の能力値更新
+    this.pitcher.updatePitcherSkill(this.defenseTeam, gameStatus, this.motivation[defense]);
 
     // バッティング内容を決めるため各種パラメータ計算
+    const pSteal = this.getStealParams(defensePosition);        // 盗塁
+    const pWildPitch = this.getWildPitchParam(defensePosition); // 暴投
+    const pStrikeOut = this.getStrikeOutParam();                // 三振
+    const pFourBall = this.getFourBallParam();                  // 四球
+    // TODO: ここから再開
 
     return {
       steal: 0,
-      stealPlayer: offenseTeam.players[0],
+      stealPlayer: this.offenseTeam.players[0],
       getScore: 0,
       outCount: 1,
       error: 1,
-      errorPlayer: defenseTeam.players[0],
+      errorPlayer: this.defenseTeam.players[0],
       wildPitch: 1,
-      wildPitcher: defenseTeam.pitchers[0],
+      wildPitcher: this.defenseTeam.pitchers[0],
       battingData: {
-        player: offenseTeam.players[0],
+        player: this.offenseTeam.players[0],
         result: '',
         hit: 1,
         hr: 0,
@@ -62,106 +111,107 @@ export class Play {
     }
   }
 
-  private getScoreDiff() {
-    return this.score.top - this.score.bottom;
-  }
-
   /**
-   * バッターの能力値＆メンタルの計算
-   * @param teamData チームデータ
-   * @param batter バッター
-   * @param gameStatus ゲームのメタ情報
+   * 盗塁に関する2つのパラメータの計算
+   *
+   * @param defensePosition 守備毎の選手データ
    */
-  private getBatterParams(teamData: Team, batter: any, gameStatus: any) {
+  private getStealParams(defensePosition: any): any {
+    const runner  = this.firstRunner;
+    const pitcher = this.pitcher;
 
-    // 投手
-    if (batter.hasOwnProperty('pitchingData')) {
-      return {
-        name: batter.name,
-        order: 9,
-        power: -5,
-        meet: -5,
-        run: -5,
-        mental: 0,
-      };
-    }
+    // 盗塁を試みるパラメータ
+    let runSkill = Math.pow(runner.run, 1.6) - runner.power;
+    let defenseSkill = pitcher.speed * 0.5 - pitcher.change * 0.5 +
+      pitcher.defense * 0.5 + defensePosition.catcher.defense * 0.5;
+    const param1 = runSkill - defenseSkill + this.offenseTeam.typeSteal * 1.5;
 
-    // 野手
-    else {
-      const mental = this.getPlayerMental(batter.condition, gameStatus);
-
-      const battingParams = this.getPowerMeetRun(teamData, batter, gameStatus.offense, mental);
-
-      return {
-        name: batter.name,
-        order: batter.order,
-        condition: batter.condition,
-        power: battingParams.power,
-        meet: battingParams.meet,
-        run: battingParams.run,
-        defense: batter.defense,
-        mental: mental,
-      };
-    }
-  }
-
-  private getPowerMeetRun(teamData: Team, batter: any, offense: string, mental: number): any {
-    const teamMind   = teamData.typeMind;
-    const teamAttach = teamData.typeAttack;
-
-    const powerMental = Math.random() * mental * 0.05 + 1;
-    const meetMental  = Math.random() * mental * 0.1  + 1;
-    const mind = (Math.random() * (10 - teamMind) - (10 - teamMind) * 0.5) * 0.4;
-
-    let power = batter.power * powerMental + mind + this.motivation[offense];
-    let meet  = batter.meet  * meetMental  + mind + this.motivation[offense];
-    let run   = batter.run;
-
-    // 【仕様】チームパラメータが攻撃的（5以上の場合は Power OR Meet が Up（逆は Down）
-    if (power > meet) {
-      power += (teamAttach - 5) * 0.2;
-    }
-    else {
-      meet += (teamAttach - 5) * 0.15;
-    }
-
-    // 【仕様】Run が 5 以上でチームが攻撃的の場合は Up
-    if (run > 4) {
-      run += (teamAttach - 5) * 0.1 + this.motivation[offense];
-    }
+    // 盗塁の成否を判定するパラメータ
+    runSkill = runner.run * 1.5 - runner.power * 0.5;
+    defenseSkill = pitcher.speed * 0.2 - pitcher.change * 0.2 +
+      pitcher.defense * 0.3 + defensePosition.catcher.defense * 0.7;
+    const param2 = runSkill - defenseSkill + 55;
 
     return {
-      power: power,
-      meet: meet,
-      run: run,
+      start: param1,
+      success: param2,
     };
   }
 
   /**
-   * 野手のメンタル値の取得
-   * 【仕様】条件によってメンタルが変わる
-   * @param condition
-   * @param gameStatus
+   * 暴投を判定するパラメータの計算
+   *
+   * @param defensePosition 守備毎の選手データ
    */
-  private getPlayerMental(condition: number, gameStatus: any): number {
-    // TODO: condition が低いとマイナスになってしまうが、それでいいのか？
-    //   絶対値を掛けて、プラスにしたほうがいいのでは？ → 直してみた（ドキドキ）
-    let mental = condition - 5;
-
-    if (gameStatus.runner >= 10) {
-      //mental *= 1.7;
-      mental += Math.abs(mental) * 1.7;
-    }
-
-    if (gameStatus.inning >= 9) {
-      //mental *= 1.5;
-      mental += Math.abs(mental) * 1.5;
-    }
-    else if (gameStatus.inning >= 7) {
-      //mental *= 1.2;
-      mental += Math.abs(mental) * 1.2;
-    }
-
-    return mental;
+  private getWildPitchParam(defensePosition: any): number {
+    return this.pitcher.speed * 0.5 + this.pitcher.change * 1.5 -
+      this.pitcher.control - defensePosition.catcher.defense;
   }
+
+  /**
+   * 三振を判定するパラメータの計算
+   */
+  private getStrikeOutParam() {
+    const batter  = this.batter;
+    const pitcher = this.pitcher;
+
+    const pSkill = pitcher.speed * 1.5 - pitcher.change * 0.5 - pitcher.control * 0.1;
+    const bSkill = batter.meet * 1.5 - batter.power * 0.5;
+
+    return (pSkill - bSkill) * 1.5 + 11 - (batter.mental - pitcher.mental);
+  }
+
+  /**
+   * 四球を判定するパラメータの計算
+   */
+  private getFourBallParam() {
+    const batter = this.batter;
+    const pitcher = this.pitcher;
+
+    const bSkill = batter.power + batter.meet * 0.5 - batter.run;
+    const pSkill = pitcher.control + pitcher.change * 0.5 - pitcher.speed;
+
+    return (bSkill - pSkill) * 0.8 + 10 - pitcher.mental * 0.5;
+  }
+
+  /**
+   * 【仕様】点差が開くとモチベーション低下www
+   *
+   * @param score 両チームのスコア
+   * @param offense topかbottomか
+   */
+  private setMotivation(score, offense) {
+    const scoreDiff = score.top - score.bottom;
+    if (Math.abs(scoreDiff) > 8) {
+      if (offense === 'top') {
+        this.motivation.top = -2;
+        this.motivation.bottom = -1;
+      }
+      else {
+        this.motivation.top = -1;
+        this.motivation.bottom = -2;
+      }
+    }
+  }
+}
+
+interface PlayMeta {
+  steal: number;
+  stealPlayer: Player;
+  getScore: number;
+  outCount: number;
+  error: number;
+  errorPlayer: Player;
+  wildPitch: number;
+  wildPitcher: Pitcher;
+  battingData: {
+    player: Player,
+    result: string,
+    hit: number,
+    hr: number,
+    batScore: number,
+    strikeOut: number,
+    fourBall: number,
+    bunt: number,
+  };
 }
