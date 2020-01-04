@@ -8,6 +8,7 @@ export enum Position {
   CENTER    = '中',
   RIGHT     = '右',
   BENCH     = '控',
+  PITCHER   = '投',
 }
 
 export enum Condition {

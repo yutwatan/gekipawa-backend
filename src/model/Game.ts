@@ -1,26 +1,25 @@
 import { TeamController } from '../controller/TeamController';
 import { Inning } from './Inning';
 import { Team } from './Team';
+import { TopBottom } from './GameStatus';
 
 export class Game {
-  private readonly times: number;
-  private readonly topTeamId: number;
-  private readonly botTeamId: number;
   private topTeam: Team;
   private botTeam: Team;
   private wallOff: number;  // サヨナラゲーム
-  private gameRec: any;
-  private scoreBoard: any;
-  private hitBoard: any;
-  private outBoard: any;
-  private inningRecords: any;
-  private score: any;
+  private gameRec: TopBottom<any[]>;
+  private scoreBoard: TopBottom<number[]>;
+  private hitBoard: TopBottom<number[]>;
+  private outBoard: TopBottom<number[]>;
+  private inningRecords: TopBottom<any[]>;
+  private score: TopBottom<number>;
   private mental: number[];
 
-  constructor(times: number, topTeamId: number, botTeamId: number) {
-    this.times = times;
-    this.topTeamId = topTeamId;
-    this.botTeamId = botTeamId;
+  constructor(
+    private times: number,
+    private topTeamId: number,
+    private botTeamId: number
+  ) {
     this.wallOff = 0;
     this.gameRec       = { top: [], bottom: [] };
     this.scoreBoard    = { top: [], bottom: [] };
@@ -31,7 +30,7 @@ export class Game {
   }
 
   async playBall() {
-    let order = {top: 1, bottom: 1};
+    let order: TopBottom<number> = {top: 1, bottom: 1};
     let scoreDiff = {pre: 0, post: 0};  // これの必要性？
     let count = 0;
     let currentInning = 1;
@@ -54,7 +53,7 @@ export class Game {
       // イニング処理
       const gameMeta = {
         inning: currentInning,
-        topOrBottom: offense,
+        offense: offense,
         order: order[offense],
         score: this.score,
       };

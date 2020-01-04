@@ -44,6 +44,9 @@ export class PitchingData extends BaseColumn {
   @Column({type: 'smallint', default: 0})
   error: number;
 
+  @Column({type: 'smallint', default: 0})
+  wildPitch: number;
+
   @Column({name: 'out_count', type: 'smallint', default: 0})
   outCount: number;
 

@@ -25,7 +25,7 @@ export class Team {
     this.pitchers = this.getPitchers(team.pitchers);
   }
 
-  getPlayersByPosition() {
+  getPlayersByPosition(): PlayerPosition {
     const playersPosition = {
       catcher: undefined,
       center: undefined,
@@ -76,54 +76,16 @@ export class Team {
   }
 
   /**
-   * チームの守備能力値を返す
+   * チームの野手の守備力更新（モチベーションを反映）
    */
-  getDefenseParams(motivation: number) {
-    const defenseParams = {
-      position: [],
-      name: [],
-      condition: [],
-      power: [],
-      meet: [],
-      run: [],
-      defense: [],
-    };
-
-    // 野手
+  updatePlayersDefenseSkill(motivation: number) {
     for (let player of this.players) {
-      defenseParams.position.push(player.position);
-      defenseParams.name.push(player.name);
-      defenseParams.condition.push(player.condition);
-      defenseParams.power.push(player.power);
-      defenseParams.meet.push(player.meet);
-      defenseParams.run.push(player.run);
-      defenseParams.defense.push(this.calcDefenseParam(player.defense, motivation));
+      player.defense += motivation + (5 - this.typeAttack) * 0.3;
 
-      if (defenseParams.position.length >= 8) {
+      if (player.order > 8) {
         break;
       }
     }
-
-    // 投手
-    defenseParams.position.push(this.pitchers[0].position);
-    defenseParams.name.push(this.pitchers[0].name);
-    defenseParams.condition.push(this.pitchers[0].condition);
-    defenseParams.power.push(this.pitchers[0].power);
-    defenseParams.meet.push(this.pitchers[0].meet);
-    defenseParams.run.push(this.pitchers[0].run);
-    defenseParams.defense.push(this.pitchers[0].defense);
-
-    return defenseParams;
-  }
-
-  /**
-   * 野手の守備力計算
-   *
-   * @param defense もともとの守備力
-   * @param motivation チームのモチベーション
-   */
-  private calcDefenseParam(defense, motivation) {
-    return defense + motivation + (5 - this.typeAttack) * 0.3;
   }
 
   /**
@@ -153,4 +115,16 @@ export class Team {
 
     return pitchers;
   }
+}
+
+export interface PlayerPosition {
+  catcher: Batter;
+  first: Batter;
+  second: Batter;
+  third: Batter;
+  shortstop: Batter;
+  left: Batter;
+  center: Batter;
+  right: Batter;
+  pitcher: Pitcher;
 }

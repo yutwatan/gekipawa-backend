@@ -1,6 +1,7 @@
 import { Player } from './Player';
 import { Team } from './Team';
-import { IBatter, Motivation } from './IBatter';
+import { IBatter, Mental } from './IBatter';
+import { GameStatus } from './GameStatus';
 
 export class Pitcher extends Player implements IBatter {
   speed: number;      // 選手能力パラメータ：速球
@@ -41,7 +42,7 @@ export class Pitcher extends Player implements IBatter {
    * @param offenseTeam 攻撃チーム
    * @param motivation モチベーション
    */
-  updateBatterSkill(gameStatus: any, offenseTeam: Team, motivation: Motivation): void {
+  updateBatterSkill(gameStatus: GameStatus, offenseTeam: Team, motivation: number): void {
     this.power  = -5;
     this.meet   = -5;
     this.run    = -5;
@@ -51,12 +52,12 @@ export class Pitcher extends Player implements IBatter {
   /**
    * 投手の能力パラメータを計算＆更新
    *
-   * @param team 投手の所属チーム
    * @param gameStatus 試合のメタ情報
+   * @param team 投手の所属チーム
    * @param motivation モチベーション
    */
-  updatePitcherSkill(team: Team, gameStatus: any, motivation: number) {
-    const attr = this.getMentalAttribute(gameStatus.inning, gameStatus.runner);
+  updatePitcherSkill(gameStatus: GameStatus, team: Team, motivation: number) {
+    const attr = this.getMental(gameStatus.inning, gameStatus.runner);
     this.mental = attr.mental;
 
     const speedMental   = Math.random() * attr.mental * 0.05 + attr.stamina;
@@ -78,7 +79,13 @@ export class Pitcher extends Player implements IBatter {
     this.control = control + (5 - team.typeAttack) * 0.2;
   }
 
-  private getMentalAttribute(inning: number, runner: number) {
+  /**
+   * 投手のメンタル値の取得
+   *
+   * @param inning イニング
+   * @param runner ランナー状況
+   */
+  getMental(inning: number, runner: number): Mental {
     let mental = this.condition - 5;
     let stamina = 0;
 
