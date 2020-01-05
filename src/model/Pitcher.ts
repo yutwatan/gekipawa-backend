@@ -4,18 +4,19 @@ import { IBatter, Mental } from './IBatter';
 import { GameStatus } from './GameStatus';
 
 export class Pitcher extends Player implements IBatter {
-  speed: number;      // 選手能力パラメータ：速球
-  change: number;     // 選手能力パラメータ：変化球
-  control: number;    // 選手能力パラメータ：コントロール
-  win: number;        // 勝利数
-  lose: number;       // 敗戦数
-  strikeOut: number;  // 奪三振
-  fourBall: number;   // 与四球
-  hit: number;        // 被安打
-  hr: number;         // 被本塁打
-  wildPitch: number;  // 暴投数
-  outCount: number;   // アウト数
-  lossScore: number;  // 自責点
+  speed: number;          // 選手能力パラメータ：速球
+  change: number;         // 選手能力パラメータ：変化球
+  control: number;        // 選手能力パラメータ：コントロール
+  win: number;            // 勝利数
+  lose: number;           // 敗戦数
+  strikeOut: number;      // 奪三振
+  fourBall: number;       // 与四球
+  hit: number;            // 被安打
+  hr: number;             // 被本塁打
+  wildPitch: number;      // 暴投数
+  outCount: number;       // アウト数
+  lossScore: number;      // 失点
+  selfLossScore: number;  // 自責点
 
   constructor(pitcher) {
     super(pitcher);
@@ -32,6 +33,7 @@ export class Pitcher extends Player implements IBatter {
     this.wildPitch = pitcher.pitchingData.wildPitch;
     this.outCount = pitcher.pitchingData.outCount;
     this.lossScore = pitcher.pitchingData.lossScore;
+    this.selfLossScore = pitcher.pitchingData.selfLossScore;
   }
 
   /**
@@ -77,6 +79,13 @@ export class Pitcher extends Player implements IBatter {
       this.change = change + (5 - team.typeAttack) * 0.1;
     }
     this.control = control + (5 - team.typeAttack) * 0.2;
+  }
+
+  /**
+   * ランナー時の走塁スキルの更新
+   */
+  updateRunningSkill() {
+    this.run = -5;
   }
 
   /**

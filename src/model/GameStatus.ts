@@ -1,4 +1,4 @@
-import { Player } from './Player';
+import { IBatter } from './IBatter';
 
 export interface GameStatus {
   inning: number;
@@ -8,7 +8,7 @@ export interface GameStatus {
   outCount: number;
   order: number;
   runner: number;
-  firstRunner: Player;
+  firstRunner: IBatter;
 }
 
 export interface TopBottom<T> {

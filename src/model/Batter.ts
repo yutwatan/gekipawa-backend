@@ -50,6 +50,12 @@ export class Batter extends Player implements IBatter {
   }
 
   /**
+   * ランナー時の走塁スキルの更新（野手の場合は今の所変化なし）
+   */
+  updateRunningSkill() {
+  }
+
+  /**
    * 野手のメンタル値の取得
    * 【仕様】条件によってメンタルが変わる
    *

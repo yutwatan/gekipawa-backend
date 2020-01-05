@@ -34,13 +34,4 @@ export class Player {
     this.error = player.battingData.error;
     this.mental = 0;
   }
-
-  /**
-   * 投手の走力を再定義
-   */
-  updateSkill() {
-    if (this.order == 9) {
-      this.run = -5;
-    }
-  }
 }

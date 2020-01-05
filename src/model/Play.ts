@@ -10,23 +10,23 @@ export class Play {
   private motivation: TopBottom<number>;
   offense: string;          // 'top' or 'bottom'
   defense: string;          // 'top' or 'bottom'
-  runner: number;           // 塁上のランナー： 3bit 表記（1がランナーを意味する）
   currentOutCount: number;  // 現在のアウトカウント
+  runner: number;           // 塁上のランナー： 3bit 表記（1がランナーを意味する）
   order: number;            // 打順
   scoreDiff: number;        // 得点差
-  firstRunner: Player;      // 一塁ランナー（盗塁の対象）
+  firstRunner: IBatter;     // 一塁ランナー（盗塁の対象）
   pitcher: Pitcher;         // 対戦投手
   getScore: number;         // この打席が完了するまでにおける得点
   out: number;              // この打席の結果におけるアウト数
   error: boolean;           // エラー Flag
-  defensePlayer: Player[];  // 打球を処理した選手
+  defender: Player[];       // 打球を処理した選手
   wildPitch: boolean;       // 暴投 Flag
   wildPitcher: Pitcher;     // 暴投した投手
   bunt: string;             // バント結果： 'succeed' or 'fail'
   steal: string;            // 盗塁結果： 'succeed' or 'fail'
-  stealPlayer: Player;      // 盗塁選手
+  stealPlayer: IBatter;     // 盗塁選手
   batter: IBatter;          // バッター（野手 or 投手）
-  batting: string;          // バッティング内容
+  batting: string;          // バッティング内容 TODO: これ使ってなくね？
   batScore: number;         // 打点
   hit: number;              // ヒット (1: 一塁打、 2: 二塁打、 3: 三塁打、 4: 本塁打）
   hr: boolean;              // ホームラン Flag
@@ -45,7 +45,7 @@ export class Play {
     this.runner = gameStatus.runner;
     this.currentOutCount = gameStatus.outCount;
     this.order = gameStatus.order;
-    this.firstRunner = gameStatus.firstRunner;
+    this.firstRunner = Object.assign({}, gameStatus.firstRunner);
     this.scoreDiff = Math.abs(gameStatus.score.top - gameStatus.score.bottom);
     this.motivation = { top: 0, bottom: 0 };
     this.steal = '';
@@ -74,7 +74,7 @@ export class Play {
     else {
       this.batter = new Batter(this.offenseTeam.players[this.order]);
     }
-    this.pitcher = this.defenseTeam.pitchers[0];
+    this.pitcher = Object.assign({}, this.defenseTeam.pitchers[0]);
 
     // モチベーション設定
     this.setMotivation();
@@ -83,7 +83,8 @@ export class Play {
     this.batter.updateBatterSkill(this.gameStatus, this.offenseTeam, this.motivation[this.offense]);
 
     // ランナーの能力値更新（投手のときは run = -5）
-    this.firstRunner.updateSkill();
+    // TODO: インタフェースにより、Batter または Pitcher のオブジェクトになるので更新不要のはず
+    //this.firstRunner.updateRunningSkill();
 
     // 守備チーム野手の守備力更新
     this.defenseTeam.updatePlayersDefenseSkill(this.motivation[this.defense]);
@@ -104,8 +105,11 @@ export class Play {
     // バッティング実行
     this.setBattingResult(battingParams, defensePosition);
 
-    // ランナー処理
+    // ランナー処理 & ホームインした数のカウント（＝得点計算）
     this.updateRunner();
+
+    // 打点に加算
+    this.batScore += this.getScore;
 
     // 追加点があるとモチベーション変動
     if (this.getScore > 0) {
@@ -124,8 +128,9 @@ export class Play {
   private setBattingResult(battingParams: any, defensePosition: any) {
 
     // 盗塁
-    if (Math.random() * 100 < battingParams.pSteal.start &&
+    if (
       (this.runner === 1 || this.runner === 101) &&
+      Math.random() * 100 < battingParams.pSteal.start &&
       this.firstRunner.order !== 9
     ) {
       this.doSteal(battingParams.pSteal.success);
@@ -151,7 +156,7 @@ export class Play {
       this.doFourBall();
     }
 
-    // 安打
+    // ヒッティング
     else if (Math.random() * 100 < battingParams.pHit) {
       this.doHitting(defensePosition);
     }
@@ -178,7 +183,7 @@ export class Play {
       }
 
       this.steal = 'succeed';
-      this.stealPlayer = this.firstRunner;
+      this.stealPlayer = Object.assign({}, this.firstRunner);
       this.motivation[this.offense] += 0.1;
     }
     else {
@@ -195,7 +200,7 @@ export class Play {
     this.runner *= 10;
     this.motivation[this.defense] -= 0.1;
     this.wildPitch = true;
-    this.wildPitcher = this.pitcher;
+    this.wildPitcher = Object.assign({}, this.pitcher);
   }
 
   /**
@@ -241,7 +246,6 @@ export class Play {
     if (Math.random() * 100 < bSkill || this.order === 9) {
       this.runner *= 10;
       this.bunt = 'succeed';
-      // TODO: 打席数をカウントしない処理が必要（Inning.js でやる？）
     }
     else {
       this.bunt = 'fail';
@@ -262,10 +266,6 @@ export class Play {
    * 四球
    */
   private doFourBall(): void {
-    if (this.runner === 111) {
-      this.batScore++;  // 押し出しは打点がつく
-    }
-
     if (this.runner === 101) {
       this.runner += 10;
     }
@@ -277,7 +277,6 @@ export class Play {
     }
 
     this.fourBall = true;
-    // TODO: 打席数をカウントしない処理が必要（Inning.js でやる？）
   }
 
   /**
@@ -310,9 +309,9 @@ export class Play {
 
     // 外野への打球
     if (
-      this.defensePlayer[0].position === Position.LEFT ||
-      this.defensePlayer[0].position === Position.CENTER ||
-      this.defensePlayer[0].position === Position.RIGHT
+      this.defender[0].position === Position.LEFT ||
+      this.defender[0].position === Position.CENTER ||
+      this.defender[0].position === Position.RIGHT
     ) {
       this.outField = true;
       this.doOutfield();
@@ -329,12 +328,12 @@ export class Play {
    * NOTE: 強い打球は別の関数
    */
   private doOutfield(): void {
-    let fielder = this.defensePlayer[0];
+    let fielder = Object.assign({}, this.defender[0]);
     let dSkill = (20 - (fielder.defense * 0.7 + fielder.run * 1.3)) * 1.5 + 25;
     let errorParam = Math.pow(10 - fielder.defense, 1.5) * 0.3;
 
-    if (this.defensePlayer.length === 2) {
-      fielder = this.defensePlayer[1];
+    if (this.defender.length === 2) {
+      fielder = Object.assign({}, this.defender[1]);
       dSkill = (dSkill + (20 - (fielder.defense * 0.7 + fielder.run * 1.3))) * 0.5;
       errorParam *= 1.5;
     }
@@ -370,15 +369,15 @@ export class Play {
    */
   private doInfield(): void {
     const batter = this.batter;
-    const fielder = this.defensePlayer[0];
+    const fielder = Object.assign({}, this.defender[0]);
 
     const bSkill = batter.power * 0.3 + batter.meet * 0.5 + batter.run * 0.2;
     let dSkill = fielder.defense * 0.8 + fielder.run * 0.2;
     let infieldHit = (batter.run * 1.3 - batter.power * 0.3 - fielder.defense) * 1.5 + 10;
     let errorParam = Math.pow(10 - fielder.defense, 1.5) * 0.6;
 
-    if (this.defensePlayer.length === 2) {
-      const fielder2 = this.defensePlayer[1];
+    if (this.defender.length === 2) {
+      const fielder2 = Object.assign({}, this.defender[1]);
       dSkill = (dSkill + fielder2.defense * 0.8 + fielder2.run * 0.2) * 0.5;
       infieldHit += 10;
       errorParam *= 1.5;
@@ -389,8 +388,8 @@ export class Play {
     // ヒット
     if (
       Math.random() * 100 < hit &&
-      this.defensePlayer[0].position !== Position.PITCHER &&
-      this.defensePlayer[0].position !== Position.CATCHER
+      this.defender[0].position !== Position.PITCHER &&
+      this.defender[0].position !== Position.CATCHER
     ) {
       this.doHit();
     }
@@ -438,6 +437,11 @@ export class Play {
     this.runner = runner;
     this.error = true;
     this.motivation[this.defense] -= 0.2;
+
+    // 2アウトの場面でエラーによるホームインがあっても打点はつかない
+    if (runner > 111 && this.currentOutCount === 2) {
+      this.batScore--;
+    }
   }
 
   /**
@@ -446,7 +450,6 @@ export class Play {
   private doSacrificeFly(): void {
     this.runner += 900;
     this.sacrificeFly = true;
-    // TODO: 打席数をカウントしない処理が必要（Inning.js でやる？）
   }
 
   /**
@@ -529,13 +532,13 @@ export class Play {
    */
   private doLongHit(): void {
     const batter = this.batter;
-    const fielder1 = this.defensePlayer[0];
+    const fielder1 = this.defender[0];
 
     const bSkill = batter.run * 2 - batter.power;
     let dSkill = fielder1.defense + fielder1.run;
 
-    if (this.defensePlayer.length === 2) {
-      const fielder2 = this.defensePlayer[1];
+    if (this.defender.length === 2) {
+      const fielder2 = this.defender[1];
       dSkill = (dSkill + fielder2.defense + fielder2.run) * 0.5;
     }
 
@@ -576,7 +579,7 @@ export class Play {
    * シングルヒット（外野への打球）
    */
   private doSingleHit(): void {
-    if (this.runner >= 10 && Math.random() * this.defensePlayer[0].defense < 3.5) {
+    if (this.runner >= 10 && Math.random() * this.defender[0].defense < 3.5) {
       this.runner = this.runner * 100 + 1;
     }
     else {
@@ -590,9 +593,9 @@ export class Play {
    * ヒット（平凡な打球）
    */
   private doHit(): void {
-    let hit = Math.random() * this.defensePlayer[0].defense < 2.5;
+    let hit = Math.random() * this.defender[0].defense < 2.5;
     if (!this.outField) {
-      hit = this.runner >= 10 && Math.random() * this.defensePlayer[0].defense < 2;
+      hit = this.runner >= 10 && Math.random() * this.defender[0].defense < 2;
     }
 
     if (hit) {
@@ -669,68 +672,68 @@ export class Play {
 
     switch (direction) {
       case 0:
-        this.defensePlayer.push(defensePosition.pitcher);
+        this.defender.push(defensePosition.pitcher);
         break;
       case 1:
-        this.defensePlayer.push(defensePosition.catcher);
+        this.defender.push(defensePosition.catcher);
         break;
       case 2:
-        this.defensePlayer.push(defensePosition.first);
+        this.defender.push(defensePosition.first);
         break;
       case 3:
-        this.defensePlayer.push(defensePosition.second);
+        this.defender.push(defensePosition.second);
         break;
       case 4:
-        this.defensePlayer.push(defensePosition.third);
+        this.defender.push(defensePosition.third);
         break;
       case 5:
-        this.defensePlayer.push(defensePosition.shortstop);
+        this.defender.push(defensePosition.shortstop);
         break;
       case 6:
-        this.defensePlayer.push(defensePosition.second);
-        this.defensePlayer.push(defensePosition.first);
+        this.defender.push(defensePosition.second);
+        this.defender.push(defensePosition.first);
         break;
       case 7:
         if (Math.random() * 2 < 1) {
-          this.defensePlayer.push(defensePosition.second);
-          this.defensePlayer.push(defensePosition.shortstop);
+          this.defender.push(defensePosition.second);
+          this.defender.push(defensePosition.shortstop);
         }
         else {
-          this.defensePlayer.push(defensePosition.shortstop);
-          this.defensePlayer.push(defensePosition.second);
+          this.defender.push(defensePosition.shortstop);
+          this.defender.push(defensePosition.second);
         }
         break;
       case 8:
-        this.defensePlayer.push(defensePosition.shortstop);
-        this.defensePlayer.push(defensePosition.third);
+        this.defender.push(defensePosition.shortstop);
+        this.defender.push(defensePosition.third);
         break;
       case 9:
-        this.defensePlayer.push(defensePosition.left);
+        this.defender.push(defensePosition.left);
         break;
       case 10:
-        this.defensePlayer.push(defensePosition.center);
+        this.defender.push(defensePosition.center);
         break;
       case 11:
-        this.defensePlayer.push(defensePosition.right);
+        this.defender.push(defensePosition.right);
         break;
       case 12:
         if (Math.random() * 2 < 1) {
-          this.defensePlayer.push(defensePosition.center);
-          this.defensePlayer.push(defensePosition.left);
+          this.defender.push(defensePosition.center);
+          this.defender.push(defensePosition.left);
         }
         else {
-          this.defensePlayer.push(defensePosition.left);
-          this.defensePlayer.push(defensePosition.center);
+          this.defender.push(defensePosition.left);
+          this.defender.push(defensePosition.center);
         }
         break;
       case 13:
         if (Math.random() * 2 < 1) {
-          this.defensePlayer.push(defensePosition.center);
-          this.defensePlayer.push(defensePosition.right);
+          this.defender.push(defensePosition.center);
+          this.defender.push(defensePosition.right);
         }
         else {
-          this.defensePlayer.push(defensePosition.right);
-          this.defensePlayer.push(defensePosition.center);
+          this.defender.push(defensePosition.right);
+          this.defender.push(defensePosition.center);
         }
         break;
     }
@@ -781,6 +784,12 @@ export class Play {
    * @param defensePosition 守備毎の選手データ
    */
   private getStealParams(defensePosition: any): any {
+
+    // 盗塁の発生するシチュエーションじゃないなら計算しない
+    if (this.runner !== 1 && this.runner !== 101) {
+      return { start: 0, success: 0 };
+    }
+
     const runner  = this.firstRunner;
     const pitcher = this.pitcher;
 
