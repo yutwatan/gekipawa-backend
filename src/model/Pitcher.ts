@@ -17,6 +17,7 @@ export class Pitcher extends Player implements IBatter {
   outCount: number;       // アウト数
   lossScore: number;      // 失点
   selfLossScore: number;  // 自責点
+  pitchingResult: PitchingResult; // ピッチング結果の一時期録用
 
   constructor(pitcher) {
     super(pitcher);
@@ -34,6 +35,17 @@ export class Pitcher extends Player implements IBatter {
     this.outCount = pitcher.pitchingData.outCount;
     this.lossScore = pitcher.pitchingData.lossScore;
     this.selfLossScore = pitcher.pitchingData.selfLossScore;
+    this.pitchingResult = {
+      atBat: 0,
+      hit: 0,
+      hr: 0,
+      fourBall: 0,
+      strikeOut: 0,
+      wildPitch: 0,
+      outCount: 0,
+      lossScore: 0,
+      selfLossScore: 0,
+    }
   }
 
   /**
@@ -116,4 +128,16 @@ export class Pitcher extends Player implements IBatter {
       stamina: stamina,
     };
   }
+}
+
+export interface PitchingResult {
+  atBat: number;          // 対戦打数の合計
+  hit: number;            // 被安打
+  hr: number;             // 被本塁打
+  fourBall: number;       // 与四球
+  strikeOut: number;      // 奪三振
+  wildPitch: number;
+  outCount: number;       // 打ち取ったアウト数（イニング数の代わり）
+  lossScore: number;      // 失点
+  selfLossScore: number;  // 自責点
 }

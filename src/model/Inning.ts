@@ -15,7 +15,6 @@ export class Inning {
   private readonly defense: string;       // 'top' or 'bottom'
   private runner: number;                 // 3bit 表現（例：一三塁 → 101）
   private firstRunner: IBatter;           // 一塁ランナーのみ盗塁の対象となる（仕様）
-  private wallOff: number;                // サヨナラ試合フラグ
   order: number;                          // 打順
   score: number;                          // イニング中の得点
   hit: number;                            // イニング中でのヒット数
@@ -30,7 +29,6 @@ export class Inning {
     this.order = gameMeta.order;
     this.firstRunner = new Batter({});
     this.runner = 0;
-    this.wallOff = 0;
     this.score = 0;
     this.hit = 0;
     this.outCount = 0;
@@ -72,7 +70,7 @@ export class Inning {
         this.offense === 'bottom' &&
         this.beforeScore.top < this.getCurrentScore().bottom
       ) {
-        this.wallOff = 1;
+        this.inningResults[this.inningResults.length - 1].wallOff = true;
         return;
       }
     }
@@ -96,7 +94,7 @@ export class Inning {
    *
    * @param play バッティングオブジェクト
    */
-  private updateForNextPlay(play: Play) {
+  private updateForNextPlay(play: Play): void {
 
     // 得点
     this.score += play.getScore;
@@ -167,19 +165,17 @@ export class Inning {
 
     // 打数
     if (
-      !play.fourBall &&
+      play.steal === '' &&
       !play.wildPitch &&
-      !play.sacrificeFly && // 犠飛
       play.bunt === '' &&
-      play.steal === ''
+      !play.sacrificeFly && // 犠飛
+      !play.fourBall
     ) {
       inningResult.atBat = 1;
     }
 
     // 自責点
-    if (!play.error) {
-      inningResult.selfLossScore = play.getScore;
-    }
+    inningResult.selfLossScore = play.getScore - play.errorScore;
   }
 
   /**
@@ -220,6 +216,7 @@ export class Inning {
       steal: '',
       wildPitch: false,
       selfLossScore: 0,
+      wallOff: false,
     }
   }
 }
@@ -246,4 +243,5 @@ export interface InningResult {
   steal: string;          // 注意） バッターの盗塁ではなく、1塁ランナーの盗塁
   wildPitch: boolean;
   selfLossScore: number;  // 自責点
+  wallOff: boolean;       // サヨナラゲーム
 }

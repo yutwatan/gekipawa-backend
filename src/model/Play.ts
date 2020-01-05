@@ -1,7 +1,6 @@
 import { PlayerPosition, Team } from './Team';
 import { Pitcher } from './Pitcher';
 import { Player } from './Player';
-import { Batter } from './Batter';
 import { IBatter } from './IBatter';
 import { GameStatus, TopBottom } from './GameStatus';
 import { Position } from '../entity/Enum';
@@ -11,22 +10,22 @@ export class Play {
   offense: string;          // 'top' or 'bottom'
   defense: string;          // 'top' or 'bottom'
   currentOutCount: number;  // 現在のアウトカウント
-  runner: number;           // 塁上のランナー： 3bit 表記（1がランナーを意味する）
-  order: number;            // 打順
   scoreDiff: number;        // 得点差
+  runner: number;           // 塁上のランナー： 3bit 表記（1がランナーを意味する）
   firstRunner: IBatter;     // 一塁ランナー（盗塁の対象）
+  order: number;            // 打順
+  batter: IBatter;          // バッター（野手 or 投手）
   pitcher: Pitcher;         // 対戦投手
   getScore: number;         // この打席が完了するまでにおける得点
   out: number;              // この打席の結果におけるアウト数
   error: boolean;           // エラー Flag
+  errorScore: number;       // エラーに伴う得点（自責点の計算時用）
   defender: Player[];       // 打球を処理した選手
   wildPitch: boolean;       // 暴投 Flag
   wildPitcher: Pitcher;     // 暴投した投手
   bunt: string;             // バント結果： 'succeed' or 'fail'
   steal: string;            // 盗塁結果： 'succeed' or 'fail'
   stealPlayer: IBatter;     // 盗塁選手
-  batter: IBatter;          // バッター（野手 or 投手）
-  batting: string;          // バッティング内容 TODO: これ使ってなくね？
   batScore: number;         // 打点
   hit: number;              // ヒット (1: 一塁打、 2: 二塁打、 3: 三塁打、 4: 本塁打）
   hr: boolean;              // ホームラン Flag
@@ -52,8 +51,8 @@ export class Play {
     this.getScore = 0;
     this.out = 0;
     this.error = false;
+    this.errorScore = 0;
     this.wildPitch = false;
-    this.batting = '';
     this.hit = 0;
     this.hr = false;
     this.batScore = 0;
@@ -69,10 +68,10 @@ export class Play {
    */
   doBatting(): void {
     if (this.order === 9) {
-      this.batter = new Pitcher(this.offenseTeam.pitchers[0]);
+      this.batter = this.offenseTeam.pitchers[0];
     }
     else {
-      this.batter = new Batter(this.offenseTeam.players[this.order]);
+      this.batter = this.offenseTeam.players[this.order];
     }
     this.pitcher = Object.assign({}, this.defenseTeam.pitchers[0]);
 
@@ -108,8 +107,13 @@ export class Play {
     // ランナー処理 & ホームインした数のカウント（＝得点計算）
     this.updateRunner();
 
-    // 打点に加算
+    // 得点を打点に加算
     this.batScore += this.getScore;
+
+    // 選手の成績登録
+    this.updatePlayerResult();
+
+    // TODO: イマココ （最終編集ポイント）
 
     // 追加点があるとモチベーション変動
     if (this.getScore > 0) {
@@ -119,6 +123,111 @@ export class Play {
 
     // TODO: ランナーの表示設定をここに実装すべきか？
     //   → クライアント側で実装すべきなので、一旦省略する
+  }
+
+  /**
+   * 選手の成績登録
+   */
+  private updatePlayerResult() {
+    const battingResult  = this.batter.battingResult;
+    const pitchingResult = this.pitcher.pitchingResult;
+    const runnerResult   = this.firstRunner.battingResult;
+
+    // 盗塁
+    if (this.steal !== '') {
+      if (this.steal === 'succeed') {
+        runnerResult.steal++;
+      }
+      else {
+        runnerResult.stealFailed++;
+      }
+    }
+
+    // 暴投
+    else if (this.wildPitch) {
+      pitchingResult.wildPitch++;
+    }
+
+    // バッティング
+    else {
+      // 打席
+      battingResult.box++;
+
+      // 投手の対戦打数
+      pitchingResult.atBat++;
+
+      // 打点
+      battingResult.batScore += this.batScore;
+
+      // バント
+      if (this.bunt !== '') {
+        if (this.bunt === 'succeed') {
+          battingResult.bunt++;
+        }
+        else {
+          battingResult.atBat++;  // バント失敗時は打数カウントされる
+        }
+      }
+
+      // 犠飛
+      else if (this.sacrificeFly) {
+        battingResult.sacrificeFly++;
+      }
+
+      // 四球
+      else if (this.fourBall) {
+        battingResult.fourBall++;
+        pitchingResult.fourBall++;
+      }
+      // ↑打数カウントなし
+
+      // ↓打数カウントあり
+      else {
+        battingResult.atBat++;
+
+        // 三振
+        if (this.strikeOut) {
+          battingResult.strikeOut++;
+          pitchingResult.strikeOut++;
+        }
+
+        // ヒット
+        else if (this.hit > 0) {
+          battingResult.hit++;
+          pitchingResult.hit++;
+
+          // ホームラン
+          if (this.hr) {
+            battingResult.hr++;
+            pitchingResult.hr++;
+          }
+
+          // 三塁打
+          else if (this.hit === 3) {
+            battingResult.triple++;
+          }
+
+          // 二塁打
+          else if (this.hit === 2) {
+            battingResult.double++;
+          }
+        }
+      }
+    }
+
+    // 投手の失点・自責点を更新
+    pitchingResult.lossScore += this.getScore;
+    pitchingResult.selfLossScore += this.getScore - this.errorScore;
+
+    // アウトカウント
+    pitchingResult.outCount += this.out;
+
+    // エラー
+    if (this.error) {
+      for (let player of this.defender) {
+        player.battingResult.error++;
+      }
+    }
   }
 
   /**
@@ -171,6 +280,7 @@ export class Play {
 
   /**
    * 盗塁
+   *
    * @param paramSuccess 成否判断パラメータ
    */
   private doSteal(paramSuccess: number): void {
@@ -348,7 +458,7 @@ export class Play {
       }
     }
 
-    // エラー
+    // エラー（ツーベース進塁）
     else if (Math.random() * 100 < errorParam) {
       this.doError(this.runner * 100 + 10);
     }
@@ -416,9 +526,9 @@ export class Play {
 
       // ダブルプレイ
       if (
-        Math.random() * 100 < doublePlay &&
+        this.currentOutCount < 2 &&
         this.runner % 10 === 1 &&
-        this.currentOutCount < 2
+        Math.random() * 100 < doublePlay
       ) {
         this.doDoublePlay();
       }
@@ -434,6 +544,7 @@ export class Play {
    * @param runner 進塁後のランナー
    */
   private doError(runner: number) {
+    const preRunner = this.runner;
     this.runner = runner;
     this.error = true;
     this.motivation[this.defense] -= 0.2;
@@ -441,6 +552,13 @@ export class Play {
     // 2アウトの場面でエラーによるホームインがあっても打点はつかない
     if (runner > 111 && this.currentOutCount === 2) {
       this.batScore--;
+    }
+
+    // エラーによる得点を計測（自責点の計算時に使う）
+    const preScore  = this.getHomeInCount(preRunner);
+    const postScore = this.getHomeInCount(runner);
+    if (preScore < postScore) {
+      this.errorScore = postScore - preScore;
     }
   }
 
@@ -514,6 +632,10 @@ export class Play {
     // シングルヒット（外野への打球）
     else if (Math.random() * 100 < singleHit) {
       this.doSingleHit();
+    }
+
+    else {
+      // 特にロジックなし
     }
   }
 
@@ -861,30 +983,33 @@ export class Play {
   }
 
   /**
-   * ランナー処理
+   * ホームインしたランナーを得点に変換 & ホームインしたランナーを this.runner から除外
    */
   private updateRunner() {
-    let homeIn = this.runner / 1000;
-
-    for (let i = 1000; i >= 1; i % 10) {
-      if (homeIn >= i) {
-        this.getScore += (i === 1) ? homeIn : 1;
-        homeIn -= i;
-        /*
-        三項演算子で問題ないならココ消す
-        if (i === 1) {
-          this.getScore += homeIn;
-        }
-        else {
-          this.getScore++;
-        }
-         */
-      }
-    }
+    this.getScore = this.getHomeInCount(this.runner);
 
     if (this.getScore > 0) {
       this.runner %= 1000;
     }
+  }
+
+  /**
+   * ホームインした人数を算出
+   *
+   * @param runner ランナー状況
+   */
+  private getHomeInCount(runner: number): number {
+    let homeIn = runner / 1000;
+    let count = 0;
+
+    for (let i = 1000; i >= 1; i / 10) {
+      if (homeIn >= i) {
+        count += (i === 1) ? homeIn : 1;
+        homeIn -= i;
+      }
+    }
+
+    return count;
   }
 
   /**

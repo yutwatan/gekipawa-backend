@@ -64,7 +64,7 @@ export class Game {
       this.scoreBoard[offense].push(inning.score);
       this.hitBoard[offense].push(inning.hit);
       this.outBoard[offense].push(inning.outCount);
-      this.inningRecords[offense].push(inning);
+      this.inningRecords[offense].push(inning.inningResults);
 
       // 次のループ用
       count++;

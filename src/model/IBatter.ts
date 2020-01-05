@@ -10,6 +10,7 @@ export interface IBatter {
   meet: number;
   run: number;
   mental: number;
+  battingResult: BattingResult;
 
   /**
    * バッターの能力値＆メンタルを計算して更新
@@ -32,6 +33,23 @@ export interface IBatter {
    * @param runner ランナー状況
    */
   getMental(inning: number, runner: number): number | Mental;
+}
+
+export interface BattingResult {
+  box: number;
+  atBat: number;
+  hit: number;
+  double: number;
+  triple: number;
+  hr: number;
+  fourBall: number;
+  strikeOut: number;
+  batScore: number;
+  sacrificeFly: number;
+  bunt: number;
+  steal: number;
+  stealFailed: number;
+  error: number;
 }
 
 export interface Mental {
