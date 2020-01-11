@@ -113,8 +113,6 @@ export class Play {
     // 選手の成績登録
     this.updatePlayerResult();
 
-    // TODO: イマココ （最終編集ポイント）
-
     // 追加点があるとモチベーション変動
     if (this.getScore > 0) {
       this.motivation[this.offense] += this.getScore * 0.2;

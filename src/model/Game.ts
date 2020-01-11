@@ -6,30 +6,32 @@ import { TopBottom } from './GameStatus';
 export class Game {
   private topTeam: Team;
   private botTeam: Team;
-  private wallOff: number;  // サヨナラゲーム
-  private gameRec: TopBottom<any[]>;
-  private scoreBoard: TopBottom<number[]>;
-  private hitBoard: TopBottom<number[]>;
-  private outBoard: TopBottom<number[]>;
-  private inningRecords: TopBottom<any[]>;
-  private score: TopBottom<number>;
-  private mental: number[];
+  gameRec: TopBottom<any[]>;  // TODO: コレなんだっけ？
+  scoreBoard: TopBottom<number[]>;
+  hitBoard: TopBottom<number[]>;
+  outBoard: TopBottom<number[]>;
+  inningRecords: TopBottom<any[]>;
+  score: TopBottom<number>;
+  wallOff: boolean;  // サヨナラゲーム
 
   constructor(
     private times: number,
     private topTeamId: number,
     private botTeamId: number
   ) {
-    this.wallOff = 0;
     this.gameRec       = { top: [], bottom: [] };
     this.scoreBoard    = { top: [], bottom: [] };
     this.hitBoard      = { top: [], bottom: [] };
     this.outBoard      = { top: [], bottom: [] };
     this.inningRecords = { top: [], bottom: [] };
     this.score         = { top: 0, bottom: 0 };
+    this.wallOff = false;
   }
 
-  async playBall() {
+  /**
+   * 試合開始（進行処理）
+   */
+  async playBall(): Promise<void> {
     let order: TopBottom<number> = {top: 1, bottom: 1};
     let scoreDiff = {pre: 0, post: 0};  // これの必要性？
     let count = 0;
@@ -65,14 +67,63 @@ export class Game {
       this.hitBoard[offense].push(inning.hit);
       this.outBoard[offense].push(inning.outCount);
       this.inningRecords[offense].push(inning.inningResults);
+      this.wallOff = inning.inningResults[inning.inningResults.length - 1].wallOff;
 
       // 次のループ用
       count++;
       currentInning = Math.floor(count / 2 + 1);
       order[offense] = inning.order;
       offense = Math.floor(count % 2) ? 'bottom' : 'top';
+      this.score[offense] = inning.score;
     }
 
-    // TODO: Update Game Result process
+    // 試合の結果を保存
+    await this.updateGameResult();
+  }
+
+  /**
+   * 試合の結果を保存
+   */
+  private async updateGameResult(): Promise<void> {
+
+    // チームデータ & 選手データの更新
+    await this.updateTeamAndPlayer();
+
+    // ステータステーブルの更新
+    await this.updateCurrentData();
+
+    // News or Comment の更新
+    await this.updateCommentNews();
+
+    // 履歴の更新
+    await this.updateRecord();
+  }
+
+  /**
+   * チームデータ & 選手データの更新
+   */
+  private async updateTeamAndPlayer(): Promise<void> {
+
+  }
+
+  /**
+   * ステータステーブルの更新
+   */
+  private async updateCurrentData(): Promise<void> {
+
+  }
+
+  /**
+   * News or Comment の更新
+   */
+  private async updateCommentNews(): Promise<void> {
+
+  }
+
+  /**
+   * 履歴の更新
+   */
+  private async updateRecord(): Promise<void> {
+
   }
 }

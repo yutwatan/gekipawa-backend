@@ -47,13 +47,23 @@ export class GameLogController {
 
     // TODO: ここで試合の処理をはさみ、スコアはそこから取る
     const game = new Game(times, topTeamId, botTeamId);
-    const gameData = await game.playBall();
+    await game.playBall();
 
-    gameLog.topScore = request.body.topScore;
-    gameLog.botScore = request.body.botScore;
-    gameLog.playDate = request.body.playDate; // TODO: ここで時間とってもいい
+    gameLog.topScore = game.score.top;
+    gameLog.botScore = game.score.bottom;
+    gameLog.playDate = new Date();
 
-    return this.gameLogRepository.save(gameLog);
+    const savedLog = await this.gameLogRepository.save(gameLog);
+
+    return {
+      gameLog: savedLog,
+      scoreBoard: game.scoreBoard,
+      hitBoard: game.hitBoard,
+      outBoard: game.outBoard,
+      inningRecords: game.inningRecords,
+      score: game.score,
+      wallOff: game.wallOff,
+    };
   }
 
   /*
