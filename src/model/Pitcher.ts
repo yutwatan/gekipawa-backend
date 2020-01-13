@@ -2,8 +2,10 @@ import { Player } from './Player';
 import { Team } from './Team';
 import { IBatter, Mental } from './IBatter';
 import { GameStatus } from './GameStatus';
+import { Position } from '../entity/Enum';
 
 export class Pitcher extends Player implements IBatter {
+  position: string;
   speed: number;          // 選手能力パラメータ：速球
   change: number;         // 選手能力パラメータ：変化球
   control: number;        // 選手能力パラメータ：コントロール
@@ -22,19 +24,20 @@ export class Pitcher extends Player implements IBatter {
   constructor(pitcher) {
     super(pitcher);
     this.order = 9;
+    this.position = Position.PITCHER;
     this.speed = pitcher.speed;
     this.change = pitcher.change;
     this.control = pitcher.control;
-    this.win = pitcher.pitchingData.win;
-    this.lose = pitcher.pitchingData.lose;
-    this.strikeOut = pitcher.pitchingData.strikeOut;
-    this.fourBall = pitcher.pitchingData.fourBall;
-    this.hit = pitcher.pitchingData.hit;
-    this.hr = pitcher.pitchingData.hr;
-    this.wildPitch = pitcher.pitchingData.wildPitch;
-    this.outCount = pitcher.pitchingData.outCount;
-    this.lossScore = pitcher.pitchingData.lossScore;
-    this.selfLossScore = pitcher.pitchingData.selfLossScore;
+    this.win = pitcher.pitchingData[0].win;
+    this.lose = pitcher.pitchingData[0].lose;
+    this.strikeOut = pitcher.pitchingData[0].strikeOut;
+    this.fourBall = pitcher.pitchingData[0].fourBall;
+    this.hit = pitcher.pitchingData[0].hit;
+    this.hr = pitcher.pitchingData[0].hr;
+    this.wildPitch = pitcher.pitchingData[0].wildPitch;
+    this.outCount = pitcher.pitchingData[0].outCount;
+    this.lossScore = pitcher.pitchingData[0].lossScore;
+    this.selfLossScore = pitcher.pitchingData[0].selfLossScore;
     this.pitchingResult = {
       atBat: 0,
       hit: 0,
@@ -70,7 +73,7 @@ export class Pitcher extends Player implements IBatter {
    * @param team 投手の所属チーム
    * @param motivation モチベーション
    */
-  updatePitcherSkill(gameStatus: GameStatus, team: Team, motivation: number) {
+  updatePitcherSkill(gameStatus: GameStatus, team: Team, motivation: number): void {
     const attr = this.getMental(gameStatus.inning, gameStatus.runner);
     this.mental = attr.mental;
 
@@ -96,7 +99,7 @@ export class Pitcher extends Player implements IBatter {
   /**
    * ランナー時の走塁スキルの更新
    */
-  updateRunningSkill() {
+  updateRunningSkill(): void {
     this.run = -5;
   }
 

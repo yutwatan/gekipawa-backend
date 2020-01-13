@@ -59,6 +59,12 @@ export class Inning {
       const play = new Play(this.offenseTeam, this.defenseTeam, gameStatus);
       play.doBatting();
 
+      // TODO: for DEBUG
+      console.log('order = ' + this.order +
+        ' / score = ' + (this.beforeScore[this.offense] + this.score + play.getScore) +
+        ' / runner = ' + play.runner +
+        ' / outCount = ' + (this.outCount + play.out));
+
       // バッティング記録をイニング記録に追加
       this.updateForNextPlay(play);
       this.updateInningResult(play, inningResult);
@@ -151,6 +157,7 @@ export class Inning {
     inningResult.pitcher = play.pitcher;
     inningResult.defender = play.defender;
     inningResult.runner = play.runner;
+    inningResult.order = play.order;
     inningResult.hit = play.hit > 0 ? 1 : 0;
     inningResult.hitKind = this.getHitKind(play.hit);
     inningResult.hr = play.hr ? 1 : 0;
@@ -158,9 +165,11 @@ export class Inning {
     inningResult.strikeOut = play.strikeOut ? 1 : 0;
     inningResult.batScore = play.batScore;
     inningResult.bunt = play.bunt;
-    inningResult.outCount = play.out;
+    inningResult.outCount = this.outCount;
+    inningResult.out = play.out;
     inningResult.error = play.error;
     inningResult.steal = play.steal;
+    inningResult.plusScore = play.getScore;
     inningResult.wildPitch = play.wildPitch;
 
     // 打数
@@ -183,14 +192,17 @@ export class Inning {
    * @param hitKind
    */
   private getHitKind(hitKind: number): string {
-    if (hitKind === 3) {
-      return 'triple';
-    }
-    else if (hitKind === 2) {
-      return 'double';
-    }
-    else {
-      return 'single';
+    switch (hitKind) {
+      case 4:
+        return 'homerun';
+      case 3:
+        return 'triple';
+      case 2:
+        return 'double';
+      case 1:
+        return 'single';
+      default:
+        return '';
     }
   }
 
@@ -216,6 +228,7 @@ export class Inning {
       steal: '',
       wildPitch: false,
       selfLossScore: 0,
+      plusScore: 0,
       wallOff: false,
     }
   }
@@ -230,6 +243,7 @@ export interface InningResult {
   pitcher: Pitcher;       // 対戦投手
   defender: Player[];     // 打球を処理した人
   runner: number;         // このタイミングでのランナー（3bit 表記）
+  order: number;          // 打順
   atBat: number;          // 打数（打数カウントしない場合は 0）
   hit: number;            // ここは投手と打者、両方の記録に使う
   hitKind: string;        // 1塁打(single)、2塁打(double)、3塁打(triple)、のいずれか
@@ -238,10 +252,12 @@ export interface InningResult {
   strikeOut: number;      // ここは投手と打者、両方の記録に使う
   batScore: number;       // 打点
   bunt: string;
-  outCount: number;       // 通常は 0 or 1 だが、併殺の場合は 2 になる
+  outCount: number;       // イニング内におけるアウトカウント
+  out: number;            // 通常は 0 or 1 だが、併殺の場合は 2 になる
   error: boolean;         // defender のエラー
   steal: string;          // 注意） バッターの盗塁ではなく、1塁ランナーの盗塁
   wildPitch: boolean;
   selfLossScore: number;  // 自責点
+  plusScore: number;      // 追加点（打点は問わない）
   wallOff: boolean;       // サヨナラゲーム
 }

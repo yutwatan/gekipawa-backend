@@ -90,9 +90,9 @@ export const Routes = [
   },
   {
     method: 'post',
-    route: '/gameLog',
+    route: '/playBall',
     controller: GameLogController,
-    action: 'save'
+    action: 'playBall'
   },
 
   // Comment & News

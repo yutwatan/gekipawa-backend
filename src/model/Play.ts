@@ -44,7 +44,8 @@ export class Play {
     this.runner = gameStatus.runner;
     this.currentOutCount = gameStatus.outCount;
     this.order = gameStatus.order;
-    this.firstRunner = Object.assign({}, gameStatus.firstRunner);
+    //this.firstRunner = Object.assign({}, gameStatus.firstRunner);
+    this.firstRunner = gameStatus.firstRunner;
     this.scoreDiff = Math.abs(gameStatus.score.top - gameStatus.score.bottom);
     this.motivation = { top: 0, bottom: 0 };
     this.steal = '';
@@ -67,13 +68,13 @@ export class Play {
    * バッティング（対戦）処理
    */
   doBatting(): void {
-    if (this.order === 9) {
+    if (this.order === 0) {
       this.batter = this.offenseTeam.pitchers[0];
     }
     else {
-      this.batter = this.offenseTeam.players[this.order];
+      this.batter = this.offenseTeam.players[this.order - 1];
     }
-    this.pitcher = Object.assign({}, this.defenseTeam.pitchers[0]);
+    this.pitcher = this.defenseTeam.pitchers[0];
 
     // モチベーション設定
     this.setMotivation();
@@ -789,6 +790,7 @@ export class Play {
 
     // 方向確定
     const direction = directions[Math.floor(Math.random() * directions.length)];
+    this.defender = [];
 
     switch (direction) {
       case 0:
@@ -997,10 +999,10 @@ export class Play {
    * @param runner ランナー状況
    */
   private getHomeInCount(runner: number): number {
-    let homeIn = runner / 1000;
+    let homeIn = Math.floor(runner / 1000);
     let count = 0;
 
-    for (let i = 1000; i >= 1; i / 10) {
+    for (let i = 1000; i >= 1; i /= 10) {
       if (homeIn >= i) {
         count += (i === 1) ? homeIn : 1;
         homeIn -= i;

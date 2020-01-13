@@ -6,8 +6,8 @@ import { GameStatus } from './GameStatus';
 export class Batter extends Player implements IBatter {
   constructor(batter) {
     super(batter);
-    /*
     this.position = batter.position;
+    /*
     this.power = batter.power;
     this.meet = batter.meet;
     this.run = batter.run;

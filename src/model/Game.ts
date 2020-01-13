@@ -46,9 +46,8 @@ export class Game {
 
     // 試合開始（試合終了の条件になるまでループ）
     while (
-      currentInning < 9 ||
-      offense === 'top' ||
-      this.score.top >= this.score.bottom
+      !(currentInning === 9 && offense === 'bottom' && this.score.top < this.score.bottom) &&
+      !(currentInning > 9 && offense === 'top' && this.score.top > this.score.bottom)
     ) {
       scoreDiff.pre = this.score.top - this.score.bottom;   // TODO: これナンデいるの？
 
@@ -59,6 +58,7 @@ export class Game {
         order: order[offense],
         score: this.score,
       };
+      console.log('inning = ' + currentInning + '_' + offense);
       const inning = new Inning(this.topTeam, this.botTeam, gameMeta);
       inning.doInning();
 
@@ -67,14 +67,19 @@ export class Game {
       this.hitBoard[offense].push(inning.hit);
       this.outBoard[offense].push(inning.outCount);
       this.inningRecords[offense].push(inning.inningResults);
+      this.score[offense] += inning.score;
       this.wallOff = inning.inningResults[inning.inningResults.length - 1].wallOff;
+
+      // サヨナラ
+      if (this.wallOff) {
+        break;
+      }
 
       // 次のループ用
       count++;
       currentInning = Math.floor(count / 2 + 1);
       order[offense] = inning.order;
       offense = Math.floor(count % 2) ? 'bottom' : 'top';
-      this.score[offense] = inning.score;
     }
 
     // 試合の結果を保存

@@ -30,21 +30,26 @@ export class Player {
     this.name = player.name;
     this.order = player.order;
     this.condition = player.condition;
-    this.defense = player.defense;
-    this.box = player.battingData.box;
-    this.atBat = player.battingData.atBat;
-    this.hit = player.battingData.hit;
-    this.double = player.battingData.double;
-    this.triple = player.battingData.triple;
-    this.hr = player.battingData.hr;
-    this.batScore = player.battingData.batScore;
-    this.fourBall = player.battingData.fourBall;
-    this.strikeOut = player.battingData.strikeOut;
-    this.sacrificeFly = player.battingData.sacrificeFly;
-    this.bunt = player.battingData.bunt;
-    this.steal = player.battingData.steal;
-    this.stealFailed = player.battingData.stealFailed;
-    this.error = player.battingData.error;
+    this.power = player.power;
+    this.meet = player.meet;
+    this.run = player.run;
+    if (player.hasOwnProperty('battingData')) {
+      this.defense = player.defense;
+      this.box = player.battingData[0].box;
+      this.atBat = player.battingData[0].atBat;
+      this.hit = player.battingData[0].hit;
+      this.double = player.battingData[0].double;
+      this.triple = player.battingData[0].triple;
+      this.hr = player.battingData[0].hr;
+      this.batScore = player.battingData[0].batScore;
+      this.fourBall = player.battingData[0].fourBall;
+      this.strikeOut = player.battingData[0].strikeOut;
+      this.sacrificeFly = player.battingData[0].sacrificeFly;
+      this.bunt = player.battingData[0].bunt;
+      this.steal = player.battingData[0].steal;
+      this.stealFailed = player.battingData[0].stealFailed;
+      this.error = player.battingData[0].error;
+    }
     this.mental = 0;
     this.battingResult = {
       box: 0,
