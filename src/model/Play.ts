@@ -22,7 +22,7 @@ export class Play {
   errorScore: number;       // エラーに伴う得点（自責点の計算時用）
   defender: Player[];       // 打球を処理した選手
   wildPitch: boolean;       // 暴投 Flag
-  wildPitcher: Pitcher;     // 暴投した投手
+  wildPitcher: Pitcher;     // 暴投した投手 TODO: コレ要らない疑惑
   bunt: string;             // バント結果： 'succeed' or 'fail'
   steal: string;            // 盗塁結果： 'succeed' or 'fail'
   stealPlayer: IBatter;     // 盗塁選手

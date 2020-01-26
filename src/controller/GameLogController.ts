@@ -56,18 +56,20 @@ export class GameLogController {
     gameLog.times = times;
     gameLog.topTeam = topTeamId;
     gameLog.botTeam = botTeamId;
-    gameLog.topScore = game.score.top;
-    gameLog.botScore = game.score.bottom;
+    gameLog.topScore = game.gameRec.top.score;
+    gameLog.botScore = game.gameRec.bottom.score;
     gameLog.playDate = new Date();
     const savedLog = await this.gameLogRepository.save(gameLog);
 
     return {
       gameLog: savedLog,
+      gameRecord: game.gameRec,
       scoreBoard: game.scoreBoard,
       hitBoard: game.hitBoard,
       outBoard: game.outBoard,
       inningRecords: game.inningRecords,
-      score: game.score,
+      playerResults: game.playerResults,
+      pitcherResult: game.pitcherResult,
       wallOff: game.wallOff,
     };
   }

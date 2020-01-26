@@ -18,6 +18,7 @@ export class Inning {
   order: number;                          // 打順
   score: number;                          // イニング中の得点
   hit: number;                            // イニング中でのヒット数
+  hr: number;                             // イニング中でのホームラン数
   outCount: number;                       // アウトカウント
   inningResults: InningResult[];          // イニング中のバッティング結果
 
@@ -31,6 +32,7 @@ export class Inning {
     this.runner = 0;
     this.score = 0;
     this.hit = 0;
+    this.hr = 0;
     this.outCount = 0;
     this.offenseTeam = this.offense === 'top' ? topTeam : botTeam;
     this.defenseTeam = this.offense === 'top' ? botTeam : topTeam;
@@ -109,6 +111,9 @@ export class Inning {
     if (play.hit > 0) {
       this.hit++;
     }
+
+    // ホームラン
+    this.hr += play.hr ? 1 : 0;
 
     // アウトカウント
     this.outCount += play.out;
