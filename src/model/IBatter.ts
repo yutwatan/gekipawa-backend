@@ -6,9 +6,9 @@ import { GameStatus } from './GameStatus';
  */
 export interface IBatter {
   order: number;
-  power: number;
-  meet: number;
-  run: number;
+  playPower: number;
+  playMeet: number;
+  playRun: number;
   mental: number;
   battingResult: BattingResult;
 

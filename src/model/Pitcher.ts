@@ -9,6 +9,9 @@ export class Pitcher extends Player implements IBatter {
   speed: number;          // 選手能力パラメータ：速球
   change: number;         // 選手能力パラメータ：変化球
   control: number;        // 選手能力パラメータ：コントロール
+  playSpeed: number;      // 試合中のパラメータ：速球
+  playChange: number;     // 試合中のパラメータ：変化球
+  playControl: number;    // 試合中のパラメータ：コントロール
   win: number;            // 勝利数
   lose: number;           // 敗戦数
   strikeOut: number;      // 奪三振
@@ -28,6 +31,9 @@ export class Pitcher extends Player implements IBatter {
     this.speed = pitcher.speed;
     this.change = pitcher.change;
     this.control = pitcher.control;
+    this.playSpeed = this.speed;
+    this.playChange = this.change;
+    this.playControl = this.control;
     this.win = pitcher.pitchingData[0].win;
     this.lose = pitcher.pitchingData[0].lose;
     this.strikeOut = pitcher.pitchingData[0].strikeOut;
@@ -60,9 +66,9 @@ export class Pitcher extends Player implements IBatter {
    * @param motivation モチベーション
    */
   updateBatterSkill(gameStatus: GameStatus, offenseTeam: Team, motivation: number): void {
-    this.power  = -5;
-    this.meet   = -5;
-    this.run    = -5;
+    this.playPower  = -5;
+    this.playMeet   = -5;
+    this.playRun    = -5;
     this.mental = 0;
   }
 
@@ -88,19 +94,19 @@ export class Pitcher extends Player implements IBatter {
 
     // 【仕様】チームパラメータが攻撃的（5以上）の場合は投手の能力値 Up
     if (speed > change) {
-      this.speed = speed + (5 - team.typeAttack) * 0.15;
+      this.playSpeed = speed + (5 - team.typeAttack) * 0.15;
     }
     else {
-      this.change = change + (5 - team.typeAttack) * 0.1;
+      this.playChange = change + (5 - team.typeAttack) * 0.1;
     }
-    this.control = control + (5 - team.typeAttack) * 0.2;
+    this.playControl = control + (5 - team.typeAttack) * 0.2;
   }
 
   /**
    * ランナー時の走塁スキルの更新
    */
   updateRunningSkill(): void {
-    this.run = -5;
+    this.playRun = -5;
   }
 
   /**

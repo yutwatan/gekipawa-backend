@@ -37,15 +37,15 @@ export class Batter extends Player implements IBatter {
 
     // 【仕様】チームパラメータが攻撃的（5以上）の場合は Power OR Meet が Up（逆は Down）
     if (power > meet) {
-      this.power = power + (teamAttach - 5) * 0.2;
+      this.playPower = power + (teamAttach - 5) * 0.2;
     }
     else {
-      this.meet = meet + (teamAttach - 5) * 0.15;
+      this.playMeet = meet + (teamAttach - 5) * 0.15;
     }
 
     // 【仕様】Run が 5 以上でチームが攻撃的の場合は Up
     if (run > 4) {
-      this.run = run + (teamAttach - 5) * 0.1 + motivation;
+      this.playRun = run + (teamAttach - 5) * 0.1 + motivation;
     }
   }
 

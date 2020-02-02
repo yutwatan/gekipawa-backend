@@ -9,6 +9,10 @@ export class Player {
   meet: number;         // 選手パラメータ：ミート
   run: number;          // 選手パラメータ：走力
   defense: number;      // 選手能力パラメータ：守備
+  playPower: number;    // 試合中のパラメータ：パワー
+  playMeet: number;     // 試合中のパラメータ：ミート
+  playRun: number;      // 試合中のパラメータ：走力
+  playDefense: number;  // 試合中のパラメータ：守備
   box: number;          // 打席数
   atBat: number;        // 打数
   hit: number;          // ヒット数
@@ -33,8 +37,12 @@ export class Player {
     this.power = player.power;
     this.meet = player.meet;
     this.run = player.run;
+    this.defense = player.defense;
+    this.playPower = this.power;
+    this.playMeet = this.meet;
+    this.playRun = this.run;
+    this.playDefense = this.defense;
     if (player.hasOwnProperty('battingData')) {
-      this.defense = player.defense;
       this.box = player.battingData[0].box;
       this.atBat = player.battingData[0].atBat;
       this.hit = player.battingData[0].hit;

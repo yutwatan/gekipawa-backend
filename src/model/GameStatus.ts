@@ -4,6 +4,7 @@ export interface GameStatus {
   inning: number;
   offense: string;
   defense: string;
+  motivation: TopBottom<number>;
   score: TopBottom<number>;
   outCount: number;
   order: number;

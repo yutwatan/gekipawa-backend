@@ -6,7 +6,7 @@ import { GameStatus, TopBottom } from './GameStatus';
 import { Position } from '../entity/Enum';
 
 export class Play {
-  private motivation: TopBottom<number>;
+  motivation: TopBottom<number>;
   offense: string;          // 'top' or 'bottom'
   defense: string;          // 'top' or 'bottom'
   currentOutCount: number;  // 現在のアウトカウント
@@ -47,7 +47,10 @@ export class Play {
     //this.firstRunner = Object.assign({}, gameStatus.firstRunner);
     this.firstRunner = gameStatus.firstRunner;
     this.scoreDiff = Math.abs(gameStatus.score.top - gameStatus.score.bottom);
-    this.motivation = { top: 0, bottom: 0 };
+    this.motivation = {
+      top: gameStatus.motivation.top,
+      bottom: gameStatus.motivation.bottom
+    };
     this.steal = '';
     this.getScore = 0;
     this.out = 0;
@@ -76,7 +79,7 @@ export class Play {
     }
     this.pitcher = this.defenseTeam.pitchers[0];
 
-    // モチベーション設定
+    // モチベーション更新
     this.setMotivation();
 
     // バッターの能力値＆メンタル更新
@@ -221,11 +224,9 @@ export class Play {
     // アウトカウント
     pitchingResult.outCount += this.out;
 
-    // エラー
+    // エラー （2人いる場合は2人目にエラーをつける）
     if (this.error) {
-      for (let player of this.defender) {
-        player.battingResult.error++;
-      }
+      this.defender[this.defender.length - 1].battingResult.error++;
     }
   }
 
@@ -299,6 +300,8 @@ export class Play {
       this.steal = 'fail';
       this.runner--;
       this.out++;
+      this.motivation[this.offense] -= 0.1;
+      this.motivation[this.defense] += 0.1;
     }
   }
 
@@ -325,15 +328,15 @@ export class Play {
     if (buntSituation) {
 
       // 選手の能力でバント判断（クリーンアップはバントしない）
-      const bSkill = this.batter.power + this.batter.meet;
+      const bSkill = this.batter.playPower + this.batter.playMeet;
       const teamBuntParam1 = (this.offenseTeam.typeBunt - 5) * 0.5 + 7;
       const teamBuntParam2 = (this.offenseTeam.typeBunt - 5) * 0.4 + 5;
       const teamBuntParam3 = (this.offenseTeam.typeBunt - 5) * 0.4 + 7;
 
       const goodBunter = bSkill < teamBuntParam1 ||
         (this.order < 3 || this.order > 5) &&
-        this.batter.power < teamBuntParam2 &&
-        this.batter.meet  < teamBuntParam2 &&
+        this.batter.playPower < teamBuntParam2 &&
+        this.batter.playMeet  < teamBuntParam2 &&
         Math.random() * 10 < teamBuntParam3;
 
       if (goodBunter) {
@@ -350,14 +353,18 @@ export class Play {
   private doBunt(): void {
     const batter = this.batter;
 
-    const bSkill = (10 - batter.power) + (10 - batter.meet) + batter.run + 80;
+    const bSkill = (10 - batter.playPower) + (10 - batter.playMeet) + batter.playRun + 80;
 
+    // モチベーション（独自仕様）
     if (Math.random() * 100 < bSkill || this.order === 9) {
       this.runner *= 10;
       this.bunt = 'succeed';
+      this.motivation[this.offense] += 0.1;
     }
     else {
       this.bunt = 'fail';
+      this.motivation[this.offense] -= 0.1;
+      this.motivation[this.defense] += 0.1;
     }
 
     this.out++;
@@ -375,6 +382,12 @@ export class Play {
    * 四球
    */
   private doFourBall(): void {
+
+    // 押し出しはモチベーション下がるよね（独自仕様）
+    if (this.runner === 111) {
+      this.motivation[this.defense] -= 0.2;
+    }
+
     if (this.runner === 101) {
       this.runner += 10;
     }
@@ -438,12 +451,12 @@ export class Play {
    */
   private doOutfield(): void {
     let fielder = Object.assign({}, this.defender[0]);
-    let dSkill = (20 - (fielder.defense * 0.7 + fielder.run * 1.3)) * 1.5 + 25;
-    let errorParam = Math.pow(10 - fielder.defense, 1.5) * 0.3;
+    let dSkill = (20 - (fielder.playDefense * 0.7 + fielder.playRun * 1.3)) * 1.5 + 25;
+    let errorParam = Math.pow(10 - fielder.playDefense, 1.5) * 0.3;
 
     if (this.defender.length === 2) {
       fielder = Object.assign({}, this.defender[1]);
-      dSkill = (dSkill + (20 - (fielder.defense * 0.7 + fielder.run * 1.3))) * 0.5;
+      dSkill = (dSkill + (20 - (fielder.playDefense * 0.7 + fielder.playRun * 1.3))) * 0.5;
       errorParam *= 1.5;
     }
 
@@ -480,14 +493,14 @@ export class Play {
     const batter = this.batter;
     const fielder = Object.assign({}, this.defender[0]);
 
-    const bSkill = batter.power * 0.3 + batter.meet * 0.5 + batter.run * 0.2;
-    let dSkill = fielder.defense * 0.8 + fielder.run * 0.2;
-    let infieldHit = (batter.run * 1.3 - batter.power * 0.3 - fielder.defense) * 1.5 + 10;
-    let errorParam = Math.pow(10 - fielder.defense, 1.5) * 0.6;
+    const bSkill = batter.playPower * 0.3 + batter.playMeet * 0.5 + batter.playRun * 0.2;
+    let dSkill = fielder.playDefense * 0.8 + fielder.playRun * 0.2;
+    let infieldHit = (batter.playRun * 1.3 - batter.playPower * 0.3 - fielder.playDefense) * 1.5 + 10;
+    let errorParam = Math.pow(10 - fielder.playDefense, 1.5) * 0.6;
 
     if (this.defender.length === 2) {
       const fielder2 = Object.assign({}, this.defender[1]);
-      dSkill = (dSkill + fielder2.defense * 0.8 + fielder2.run * 0.2) * 0.5;
+      dSkill = (dSkill + fielder2.playDefense * 0.8 + fielder2.playRun * 0.2) * 0.5;
       infieldHit += 10;
       errorParam *= 1.5;
     }
@@ -520,8 +533,8 @@ export class Play {
 
     // アウト
     else {
-      const doublePlay = (fielder.defense + fielder.run * 0.3) -
-        (batter.run * 1.5 - batter.power * 0.5) + 80;
+      const doublePlay = (fielder.playDefense + fielder.playRun * 0.3) -
+        (batter.playRun * 1.5 - batter.playPower * 0.5) + 80;
 
       // ダブルプレイ
       if (
@@ -655,12 +668,12 @@ export class Play {
     const batter = this.batter;
     const fielder1 = this.defender[0];
 
-    const bSkill = batter.run * 2 - batter.power;
-    let dSkill = fielder1.defense + fielder1.run;
+    const bSkill = batter.playRun * 2 - batter.playPower;
+    let dSkill = fielder1.playDefense + fielder1.playRun;
 
     if (this.defender.length === 2) {
       const fielder2 = this.defender[1];
-      dSkill = (dSkill + fielder2.defense + fielder2.run) * 0.5;
+      dSkill = (dSkill + fielder2.playDefense + fielder2.playRun) * 0.5;
     }
 
     const hitParam = bSkill - dSkill;
@@ -674,7 +687,7 @@ export class Play {
 
     // 二塁打
     else if (Math.random() * 100 < hitParam + 60) {
-      if (this.runner >= 1 && Math.random() * fielder1.defense < 3) {
+      if (this.runner >= 1 && Math.random() * fielder1.playDefense < 3) {
         this.runner = this.runner * 1000 + 10;
       }
       else {
@@ -686,7 +699,7 @@ export class Play {
 
     // 一塁打（シングルヒット）
     else {
-      if (this.runner >= 1 && Math.random() * fielder1.defense < 4) {
+      if (this.runner >= 1 && Math.random() * fielder1.playDefense < 4) {
         this.runner = this.runner * 100 + 1;
       }
       else {
@@ -700,7 +713,7 @@ export class Play {
    * シングルヒット（外野への打球）
    */
   private doSingleHit(): void {
-    if (this.runner >= 10 && Math.random() * this.defender[0].defense < 3.5) {
+    if (this.runner >= 10 && Math.random() * this.defender[0].playDefense < 3.5) {
       this.runner = this.runner * 100 + 1;
     }
     else {
@@ -714,9 +727,9 @@ export class Play {
    * ヒット（平凡な打球）
    */
   private doHit(): void {
-    let hit = Math.random() * this.defender[0].defense < 2.5;
+    let hit = Math.random() * this.defender[0].playDefense < 2.5;
     if (!this.outField) {
-      hit = this.runner >= 10 && Math.random() * this.defender[0].defense < 2;
+      hit = this.runner >= 10 && Math.random() * this.defender[0].playDefense < 2;
     }
 
     if (hit) {
@@ -751,19 +764,19 @@ export class Play {
     const batter = this.batter;
     const pitcher = this.pitcher;
 
-    const hitParam1 = Math.random() * (batter.power * 0.7 + batter.meet * 0.3);
-    const hitParam2 = Math.random() * (batter.power * 0.3 + batter.meet * 0.7);
+    const hitParam1 = Math.random() * (batter.playPower * 0.7 + batter.playMeet * 0.3);
+    const hitParam2 = Math.random() * (batter.playPower * 0.3 + batter.playMeet * 0.7);
 
-    const pSkill1 = pitcher.speed * 0.3 + pitcher.change * 0.6 + pitcher.control * 0.1;
-    const pSkill2 = pitcher.speed * 0.3 + pitcher.change * 0.5 + pitcher.control * 0.2;
+    const pSkill1 = pitcher.playSpeed * 0.3 + pitcher.playChange * 0.6 + pitcher.playControl * 0.1;
+    const pSkill2 = pitcher.playSpeed * 0.3 + pitcher.playChange * 0.5 + pitcher.playControl * 0.2;
 
     let directions;
 
     // 内野への打球
     if (
       !this.outField &&
-      Math.random() * pitcher.speed  - hitParam1 > 3 &&
-      Math.random() * pitcher.change - hitParam2 > 3
+      Math.random() * pitcher.playSpeed  - hitParam1 > 3 &&
+      Math.random() * pitcher.playChange - hitParam2 > 3
     ) {
       directions = [0, 1];
     }
@@ -778,7 +791,7 @@ export class Play {
 
     // 外野への打球
     else {
-      const pSkill = pitcher.speed * 0.5 + pitcher.change * 0.3 + pitcher.control * 0.2;
+      const pSkill = pitcher.playSpeed * 0.5 + pitcher.playChange * 0.3 + pitcher.playControl * 0.2;
 
       if (Math.random() * pSkill > hitParam2) {
         directions = [9, 10, 11];
@@ -868,8 +881,8 @@ export class Play {
     const batter = this.batter;
     const pitcher = this.pitcher;
 
-    const bSkill = batter.power * 1.5 - batter.meet * 0.5 - batter.run * 0.5;
-    const pSkill = pitcher.change * 0.5 - pitcher.speed * 0.5 + pitcher.control;
+    const bSkill = batter.playPower * 1.5 - batter.playMeet * 0.5 - batter.playRun * 0.5;
+    const pSkill = pitcher.playChange * 0.5 - pitcher.playSpeed * 0.5 + pitcher.playControl;
 
     return (bSkill - pSkill) * 1.5 + 9;
   }
@@ -881,8 +894,8 @@ export class Play {
     const batter = this.batter;
     const pitcher = this.pitcher;
 
-    const bSkill = batter.meet * 0.3 + batter.power * 0.5 + batter.run * 0.2;
-    const pSkill = pitcher.change * 0.5 - pitcher.speed * 0.2 + pitcher.control * 0.7;
+    const bSkill = batter.playMeet * 0.3 + batter.playPower * 0.5 + batter.playRun * 0.2;
+    const pSkill = pitcher.playChange * 0.5 - pitcher.playSpeed * 0.2 + pitcher.playControl * 0.7;
 
     return bSkill - pSkill + 17;
   }
@@ -894,8 +907,8 @@ export class Play {
     const batter = this.batter;
     const pitcher = this.pitcher;
 
-    const bSkill = batter.power * 0.6 + batter.meet * 0.4;
-    const pSkill = pitcher.speed * 0.2 + pitcher.change * 0.5 + pitcher.control * 0.3;
+    const bSkill = batter.playPower * 0.6 + batter.playMeet * 0.4;
+    const pSkill = pitcher.playSpeed * 0.2 + pitcher.playChange * 0.5 + pitcher.playControl * 0.3;
 
     return(bSkill - pSkill) * 0.5 + 10;
   }
@@ -916,15 +929,15 @@ export class Play {
     const pitcher = this.pitcher;
 
     // 盗塁を試みるパラメータ
-    let runSkill = Math.pow(runner.run, 1.6) - runner.power;
-    let defenseSkill = pitcher.speed * 0.5 - pitcher.change * 0.5 +
-      pitcher.defense * 0.5 + defensePosition.catcher.defense * 0.5;
+    let runSkill = Math.pow(runner.playRun, 1.6) - runner.playPower;
+    let defenseSkill = pitcher.playSpeed * 0.5 - pitcher.playChange * 0.5 +
+      pitcher.playDefense * 0.5 + defensePosition.catcher.playDefense * 0.5;
     const param1 = runSkill - defenseSkill + this.offenseTeam.typeSteal * 1.5;
 
     // 盗塁の成否を判定するパラメータ
-    runSkill = runner.run * 1.5 - runner.power * 0.5;
-    defenseSkill = pitcher.speed * 0.2 - pitcher.change * 0.2 +
-      pitcher.defense * 0.3 + defensePosition.catcher.defense * 0.7;
+    runSkill = runner.playRun * 1.5 - runner.playPower * 0.5;
+    defenseSkill = pitcher.playSpeed * 0.2 - pitcher.playChange * 0.2 +
+      pitcher.playDefense * 0.3 + defensePosition.catcher.playDefense * 0.7;
     const param2 = runSkill - defenseSkill + 55;
 
     return {
@@ -939,8 +952,8 @@ export class Play {
    * @param defensePosition 守備毎の選手データ
    */
   private getWildPitchParam(defensePosition: any): number {
-    return this.pitcher.speed * 0.5 + this.pitcher.change * 1.5 -
-      this.pitcher.control - defensePosition.catcher.defense;
+    return this.pitcher.playSpeed * 0.5 + this.pitcher.playChange * 1.5 -
+      this.pitcher.playControl - defensePosition.catcher.playDefense;
   }
 
   /**
@@ -950,8 +963,8 @@ export class Play {
     const batter  = this.batter;
     const pitcher = this.pitcher;
 
-    const pSkill = pitcher.speed * 1.5 - pitcher.change * 0.5 - pitcher.control * 0.1;
-    const bSkill = batter.meet * 1.5 - batter.power * 0.5;
+    const pSkill = pitcher.playSpeed * 1.5 - pitcher.playChange * 0.5 - pitcher.playControl * 0.1;
+    const bSkill = batter.playMeet * 1.5 - batter.playPower * 0.5;
 
     return (pSkill - bSkill) * 1.5 + 11 - (batter.mental - pitcher.mental);
   }
@@ -963,8 +976,8 @@ export class Play {
     const batter = this.batter;
     const pitcher = this.pitcher;
 
-    const bSkill = batter.power + batter.meet * 0.5 - batter.run;
-    const pSkill = pitcher.control + pitcher.change * 0.5 - pitcher.speed;
+    const bSkill = batter.playPower + batter.playMeet * 0.5 - batter.playRun;
+    const pSkill = pitcher.playControl + pitcher.playChange * 0.5 - pitcher.playSpeed;
 
     return (bSkill - pSkill) * 0.8 + 10 - pitcher.mental * 0.5;
   }
@@ -976,10 +989,10 @@ export class Play {
     const batter = this.batter;
     const pitcher = this.pitcher;
 
-    const bSkill = batter.meet * 1.5 - batter.power + batter.run * 0.5;
-    const pSkill = pitcher.speed - pitcher.change + pitcher.control;
+    const bSkill = batter.playMeet * 1.5 - batter.playPower + batter.playRun * 0.5;
+    const pSkill = pitcher.playSpeed - pitcher.playChange + pitcher.playControl;
 
-    return (bSkill - pSkill) * 1.5 + 9;
+    return (bSkill - pSkill) + 56 + (batter.mental - pitcher.mental);
   }
 
   /**

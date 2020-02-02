@@ -7,14 +7,15 @@ import { Pitcher } from './Pitcher';
 import { IBatter } from './IBatter';
 
 export class Inning {
+  private motivation: TopBottom<number>;  // チームのモチベーション
   private readonly beforeScore: TopBottom<number>; // イニング前の得点 { top: 0, bottom: 0 }
   private readonly offenseTeam: Team;     // 攻撃側のチーム
   private readonly defenseTeam: Team;     // 守備側のチーム
   private readonly inning: number;        // 何イニング目か
   private readonly offense: string;       // 'top' or 'bottom'
   private readonly defense: string;       // 'top' or 'bottom'
-  private runner: number;                 // 3bit 表現（例：一三塁 → 101）
   private firstRunner: IBatter;           // 一塁ランナーのみ盗塁の対象となる（仕様）
+  runner: number;                         // 3bit 表現（例：一三塁 → 101）
   order: number;                          // 打順
   score: number;                          // イニング中の得点
   hit: number;                            // イニング中でのヒット数
@@ -28,6 +29,9 @@ export class Inning {
     this.offense = gameMeta.offense;
     this.defense = gameMeta.offense === 'top' ? 'bottom' : 'top';
     this.order = gameMeta.order;
+    this.motivation = { top: 0, bottom: 0 };
+    this.motivation[this.offense] = gameMeta.offenseMotivation ? 1 : 0;
+    this.motivation[this.defense] = 0;
     this.firstRunner = new Batter({});
     this.runner = 0;
     this.score = 0;
@@ -50,6 +54,7 @@ export class Inning {
         inning: this.inning,
         offense: this.offense,
         defense: this.defense,
+        motivation: this.motivation,
         score: this.getCurrentScore(),
         outCount: this.outCount,
         order: this.order,
@@ -126,6 +131,10 @@ export class Inning {
     if (!play.wildPitch && play.steal === '') {
       this.order = ++this.order % 9;
     }
+
+    // チームのモチベーション
+    this.motivation.top = play.motivation.top;
+    this.motivation.bottom = play.motivation.bottom;
   }
 
   /**

@@ -8,6 +8,7 @@ import { PitchingResult } from './Pitcher';
 export class Game {
   private topTeam: Team;
   private botTeam: Team;
+  private nextMotivation: boolean; // 満塁のピンチを無失点で切り抜けると次の回モチベーションUP
   gameRec: TopBottom<GameRecord>;
   scoreBoard: TopBottom<number[]>;
   hitBoard: TopBottom<number[]>;
@@ -30,6 +31,7 @@ export class Game {
     this.playerResults = { top: [], bottom: [] };
     this.pitcherResult = { top: this.initPitcherResult(), bottom: this.initPitcherResult() };
     this.wallOff = false;
+    this.nextMotivation = false;
   }
 
   /**
@@ -62,6 +64,7 @@ export class Game {
           top: this.gameRec.top.score,
           bottom: this.gameRec.bottom.score,
         },
+        offenseMotivation: this.nextMotivation,
       };
       console.log('inning = ' + currentInning + '_' + offense);
       const inning = new Inning(this.topTeam, this.botTeam, gameMeta);
@@ -76,6 +79,9 @@ export class Game {
       this.outBoard[offense].push(inning.outCount);
       this.inningRecords[offense].push(inning.inningResults);
       this.wallOff = inning.inningResults[inning.inningResults.length - 1].wallOff;
+
+      // 満塁のピンチを無失点で切り抜けたら、次の攻撃のモチベーションUP
+      this.nextMotivation = inning.runner === 111 && inning.score === 0;
 
       // 選手の成績を変数にセット
       this.setPlayerResults(inning.inningResults, offense);

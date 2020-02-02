@@ -80,11 +80,11 @@ export class Team {
    */
   updatePlayersDefenseSkill(motivation: number) {
     for (let player of this.players) {
-      player.defense += motivation + (5 - this.typeAttack) * 0.3;
-
       if (player.order > 8) {
         break;
       }
+
+      player.playDefense = player.defense + motivation + (5 - this.typeAttack) * 0.3;
     }
   }
 
