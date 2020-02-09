@@ -580,6 +580,7 @@ export class Play {
   private doSacrificeFly(): void {
     this.runner += 900;
     this.sacrificeFly = true;
+    this.doOut();
   }
 
   /**

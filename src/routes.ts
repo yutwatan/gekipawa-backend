@@ -5,6 +5,7 @@ import { PitcherController } from './controller/PitcherController';
 import { CurrentController } from './controller/CurrentController';
 import { GameLogController } from './controller/GameLogController';
 import { CommentNewsController } from './controller/CommentNewsController';
+import { PlayBallController } from './controller/PlayBallController';
 
 export const Routes = [
   // Current data
@@ -88,10 +89,12 @@ export const Routes = [
     controller: GameLogController,
     action: 'one'
   },
+
+  // PlayBall
   {
     method: 'post',
     route: '/playBall',
-    controller: GameLogController,
+    controller: PlayBallController,
     action: 'playBall'
   },
 

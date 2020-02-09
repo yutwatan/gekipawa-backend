@@ -183,6 +183,7 @@ export class Inning {
     inningResult.out = play.out;
     inningResult.error = play.error;
     inningResult.steal = play.steal;
+    inningResult.sacrificeFly = play.sacrificeFly;
     inningResult.plusScore = play.getScore;
     inningResult.wildPitch = play.wildPitch;
 
@@ -240,6 +241,7 @@ export class Inning {
       outCount: 0,
       error: false,
       steal: '',
+      sacrificeFly: false,
       wildPitch: false,
       selfLossScore: 0,
       plusScore: 0,
@@ -265,12 +267,13 @@ export interface InningResult {
   fourBall: number;       // ここは投手と打者、両方の記録に使う
   strikeOut: number;      // ここは投手と打者、両方の記録に使う
   batScore: number;       // 打点
-  bunt: string;
+  bunt: string;           // 犠打
   outCount: number;       // イニング内におけるアウトカウント
   out: number;            // 通常は 0 or 1 だが、併殺の場合は 2 になる
   error: boolean;         // defender のエラー
   steal: string;          // 注意） バッターの盗塁ではなく、1塁ランナーの盗塁
-  wildPitch: boolean;
+  sacrificeFly: boolean;  // 犠飛
+  wildPitch: boolean;     // 暴投
   selfLossScore: number;  // 自責点
   plusScore: number;      // 追加点（打点は問わない）
   wallOff: boolean;       // サヨナラゲーム

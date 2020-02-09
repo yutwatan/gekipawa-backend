@@ -60,9 +60,9 @@ export class Team extends BaseColumn {
   @OneToMany(type => Pitcher, pitcher => pitcher.team, { cascade: true })
   pitchers: Pitcher[];
 
-  @OneToMany(type => GameLog, gameLog => gameLog.topTeam)
-  topTeam: GameLog[];
+  @OneToMany(type => GameLog, gameLog => gameLog.topTeam, { cascade: true })
+  topTeamLog: GameLog[];
 
   @OneToMany(type => GameLog, gameLog => gameLog.botTeam)
-  botTeam: GameLog[];
+  botTeamLog: GameLog[];
 }

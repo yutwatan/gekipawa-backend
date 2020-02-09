@@ -1,4 +1,3 @@
-import { TeamController } from '../controller/TeamController';
 import { Inning, InningResult } from './Inning';
 import { Team } from './Team';
 import { TopBottom } from './GameStatus';
@@ -19,9 +18,8 @@ export class Game {
   wallOff: boolean;  // サヨナラゲーム
 
   constructor(
-    private times: number,
-    private topTeamId: number,
-    private botTeamId: number
+    private topTeamData: any,
+    private botTeamData: any,
   ) {
     this.gameRec       = { top: this.initGameRec(), bottom: this.initGameRec() };
     this.scoreBoard    = { top: [], bottom: [] };
@@ -43,11 +41,8 @@ export class Game {
     let currentInning = 1;
     let offense = 'top';
 
-    // データ取得
-    const teamTop = new TeamController();
-    const teamBot = new TeamController();
-    this.topTeam = new Team(await teamTop.getTeamData(this.topTeamId, this.times));
-    this.botTeam = new Team(await teamBot.getTeamData(this.botTeamId, this.times));
+    this.topTeam = new Team(this.topTeamData);
+    this.botTeam = new Team(this.botTeamData);
 
     // 試合開始（試合終了の条件になるまでループ）
     while (

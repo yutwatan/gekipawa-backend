@@ -1,12 +1,13 @@
-import { FindManyOptions, getRepository } from 'typeorm';
 import { NextFunction, Request, Response } from 'express';
+import { FindManyOptions, getRepository } from 'typeorm';
 import { GameLog } from '../entity/GameLog';
-import { CurrentController } from './CurrentController';
-import { Game } from '../model/Game';
+import { Team } from '../entity/Team';
 
 export class GameLogController {
-
   private gameLogRepository = getRepository(GameLog);
+  private times: number;
+  private topTeamId: Team;
+  private botTeamId: Team;
 
   async all(request: Request, response: Response, next: NextFunction) {
     const options: FindManyOptions = {
@@ -33,45 +34,20 @@ export class GameLogController {
   }
 
   /**
-   * 試合の実施 & ゲーム結果と履歴の保存
-   * @param request
-   * @param response
-   * @param next
+   * Save the game log
+   * @param game
    */
-  async playBall(request: Request, response: Response, next: NextFunction) {
-    const current = new CurrentController();
-    const currentData = await current.get(request, response, next);
-
-    const times = currentData[0].times;
-    const topTeamId = request.body.topTeamId;
-    const botTeamId = request.body.bottomTeamId;
-
-    // 試合の処理
-    console.log('=========== start game ============');
-    const game = new Game(times, topTeamId, botTeamId);
-    await game.playBall();
-    console.log('=========== finish game ============');
-
+  async save(game) {
     const gameLog = new GameLog();
-    gameLog.times = times;
-    gameLog.topTeam = topTeamId;
-    gameLog.botTeam = botTeamId;
+
+    gameLog.times = this.times;
+    gameLog.topTeam = this.topTeamId;
+    gameLog.botTeam = this.botTeamId;
     gameLog.topScore = game.gameRec.top.score;
     gameLog.botScore = game.gameRec.bottom.score;
     gameLog.playDate = new Date();
-    const savedLog = await this.gameLogRepository.save(gameLog);
 
-    return {
-      gameLog: savedLog,
-      gameRecord: game.gameRec,
-      scoreBoard: game.scoreBoard,
-      hitBoard: game.hitBoard,
-      outBoard: game.outBoard,
-      inningRecords: game.inningRecords,
-      playerResults: game.playerResults,
-      pitcherResult: game.pitcherResult,
-      wallOff: game.wallOff,
-    };
+    return await this.gameLogRepository.save(gameLog);
   }
 
   /*
