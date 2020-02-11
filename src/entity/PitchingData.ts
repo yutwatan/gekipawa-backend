@@ -42,12 +42,14 @@ export class PitchingData extends BaseColumn {
   hr: number;
 
   @Column({type: 'smallint', default: 0})
-  error: number;
+  wildPitch: number;
 
   @Column({name: 'out_count', type: 'smallint', default: 0})
   outCount: number;
 
-  @Column({name: 'loss_score', type: 'smallint', default: 0})
+  @Column({name: 'loss_score', type: 'smallint', default: 0, comment: '失点'})
   lossScore: number;
 
+  @Column({name: 'self_loss_score', type: 'smallint', default: 0, comment: '自責点'})
+  selfLossScore: number;
 }

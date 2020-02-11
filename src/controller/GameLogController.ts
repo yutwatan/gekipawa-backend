@@ -1,11 +1,13 @@
-import { FindManyOptions, getRepository } from 'typeorm';
 import { NextFunction, Request, Response } from 'express';
+import { FindManyOptions, getRepository } from 'typeorm';
 import { GameLog } from '../entity/GameLog';
-import { CurrentController } from './CurrentController';
+import { Team } from '../entity/Team';
 
 export class GameLogController {
-
   private gameLogRepository = getRepository(GameLog);
+  private times: number;
+  private topTeamId: Team;
+  private botTeamId: Team;
 
   async all(request: Request, response: Response, next: NextFunction) {
     const options: FindManyOptions = {
@@ -31,20 +33,21 @@ export class GameLogController {
     });
   }
 
-  async save(request: Request, response: Response, next: NextFunction) {
-    const current = new CurrentController();
-    const currentData = await current.get(request, response, next);
-
+  /**
+   * Save the game log
+   * @param game
+   */
+  async save(game) {
     const gameLog = new GameLog();
 
-    gameLog.times = currentData[0].times;
-    gameLog.topTeam = request.body.topTeamId;
-    gameLog.botTeam = request.body.botTeamId;
-    gameLog.topScore = request.body.topScore;
-    gameLog.botScore = request.body.botScore;
-    gameLog.playDate = request.body.playDate; // TODO: ここで時間とってもいい
+    gameLog.times = this.times;
+    gameLog.topTeam = this.topTeamId;
+    gameLog.botTeam = this.botTeamId;
+    gameLog.topScore = game.gameRec.top.score;
+    gameLog.botScore = game.gameRec.bottom.score;
+    gameLog.playDate = new Date();
 
-    return this.gameLogRepository.save(gameLog);
+    return await this.gameLogRepository.save(gameLog);
   }
 
   /*

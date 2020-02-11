@@ -24,6 +24,7 @@ export class CurrentController {
 
   /**
    * Save a data to current_data table
+   * TODO: これ使っていない疑惑（→ 末尾処理で使うはず）
    * @param request
    * @param response
    * @param next
@@ -40,5 +41,13 @@ export class CurrentController {
     }
 
     return await this.currentRepository.save(request.body);
+  }
+
+  /**
+   * Update the current data
+   * @param current
+   */
+  async update(current: CurrentData) {
+    return await this.currentRepository.save(current);
   }
 }

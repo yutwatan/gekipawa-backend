@@ -21,11 +21,11 @@ export class GameLog extends BaseColumn {
   @Column({type: 'tinyint', unsigned: true})
   times: number;
 
-  @ManyToOne(type => Team, team => team.topTeam)
+  @ManyToOne(type => Team, team => team.topTeamLog)
   @JoinColumn({name: 'top_team_id'})
   topTeam: Team;
 
-  @ManyToOne(type => Team, team => team.botTeam)
+  @ManyToOne(type => Team, team => team.botTeamLog)
   @JoinColumn({name: 'bot_team_id'})
   botTeam: Team;
 
