@@ -123,6 +123,22 @@ export class TeamController {
   }
 
   /**
+   * Update team params
+   * @param request
+   * @param response
+   * @param next
+   */
+  async modify(request: Request, response: Response, next: NextFunction) {
+    const teamData = await this.getTeamData(request.params.id);
+    teamData.typeAttack = request.body.typeAttack;
+    teamData.typeBunt = request.body.typeBunt;
+    teamData.typeSteal = request.body.typeSteal;
+    teamData.typeMind = request.body.typeMind;
+
+    return await this.teamRepository.save(teamData);
+  }
+
+  /**
    * Update team data by game results
    * @param ourTorB
    * @param team

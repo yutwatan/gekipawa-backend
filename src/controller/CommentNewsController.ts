@@ -27,13 +27,19 @@ export class CommentNewsController {
     });
   }
 
+  /**
+   * Add comment or news
+   * @param request
+   * @param response
+   * @param next
+   */
   async save(request: Request, response: Response, next: NextFunction) {
     const commentNews = new CommentNews();
 
     commentNews.kind = request.body.kind;
     commentNews.user = request.body.userId;
     commentNews.comment = request.body.comment;
-    commentNews.commentDate = request.body.commentDate; // TODO: ここで時間とってもいい
+    commentNews.commentDate = new Date();
     commentNews.gameLog = request.body.gameLogId;
 
     return this.commentNewsRepository.save(commentNews);

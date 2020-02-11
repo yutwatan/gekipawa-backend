@@ -2,12 +2,11 @@ import { NextFunction, Request, Response } from 'express';
 import { FindManyOptions, getRepository } from 'typeorm';
 import { GameLog } from '../entity/GameLog';
 import { Team } from '../entity/Team';
+import { TopBottom } from '../model/GameStatus';
+import { GameRecord } from '../model/Game';
 
 export class GameLogController {
   private gameLogRepository = getRepository(GameLog);
-  private times: number;
-  private topTeamId: Team;
-  private botTeamId: Team;
 
   async all(request: Request, response: Response, next: NextFunction) {
     const options: FindManyOptions = {
@@ -35,16 +34,19 @@ export class GameLogController {
 
   /**
    * Save the game log
-   * @param game
+   * @param times
+   * @param topTeamId
+   * @param botTeamId
+   * @param gameRecord
    */
-  async save(game) {
+  async save(times: number, topTeamId: Team, botTeamId: Team, gameRecord: TopBottom<GameRecord>) {
     const gameLog = new GameLog();
 
-    gameLog.times = this.times;
-    gameLog.topTeam = this.topTeamId;
-    gameLog.botTeam = this.botTeamId;
-    gameLog.topScore = game.gameRec.top.score;
-    gameLog.botScore = game.gameRec.bottom.score;
+    gameLog.times = times;
+    gameLog.topTeam = topTeamId;
+    gameLog.botTeam = botTeamId;
+    gameLog.topScore = gameRecord.top.score;
+    gameLog.botScore = gameRecord.bottom.score;
     gameLog.playDate = new Date();
 
     return await this.gameLogRepository.save(gameLog);

@@ -5,7 +5,7 @@ import { Game, GameRecord } from '../model/Game';
 import { TopBottom } from '../model/GameStatus';
 import { BattingResult } from '../model/IBatter';
 import { PitchingResult } from '../model/Pitcher';
-import { CurrentData } from '../entity/CurrentData';
+import { GameLogController } from './GameLogController';
 
 export class PlayBallController {
 
@@ -55,11 +55,12 @@ export class PlayBallController {
     }
     await current.update(currentData[0]);
 
-    // TODO: コレ不要
-    //const savedLog = await this.save(game);
+    // ゲームログの保存
+    const gameLog = new GameLogController();
+    const saveLog = await gameLog.save(times, topTeamId, botTeamId,  game.gameRec);
 
     return {
-      gameLog: topResult.topTeamLog,
+      gameLog: saveLog,
       gameRecord: game.gameRec,
       scoreBoard: game.scoreBoard,
       hitBoard: game.hitBoard,
