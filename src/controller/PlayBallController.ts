@@ -5,6 +5,7 @@ import { Game, GameRecord } from '../model/Game';
 import { TopBottom } from '../model/GameStatus';
 import { BattingResult } from '../model/IBatter';
 import { PitchingResult } from '../model/Pitcher';
+import { CurrentData } from '../entity/CurrentData';
 
 export class PlayBallController {
 
@@ -43,7 +44,16 @@ export class PlayBallController {
     const topResult = await teamTop.update('top', topTeam, gameResults);
     await teamBot.update('bottom', botTeam, gameResults);
 
-    // TODO: Current テーブルの更新
+    // Current テーブルの更新
+    if (game.gameRec.top.score > game.gameRec.bottom.score) {
+      currentData[0].team = topTeam;
+      currentData[0].continueWin = 1;
+    }
+    else {
+      currentData[0].team = botTeam;
+      currentData[0].continueWin++;
+    }
+    await current.update(currentData[0]);
 
     // TODO: コレ不要
     //const savedLog = await this.save(game);
