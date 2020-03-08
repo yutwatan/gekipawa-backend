@@ -130,10 +130,20 @@ export class TeamController {
    */
   async modify(request: Request, response: Response, next: NextFunction) {
     const teamData = await this.getTeamData(request.params.id);
+
+    // Set new team params
     teamData.typeAttack = request.body.typeAttack;
     teamData.typeBunt = request.body.typeBunt;
     teamData.typeSteal = request.body.typeSteal;
     teamData.typeMind = request.body.typeMind;
+
+    // Set new order
+    for (let i = 0; i < request.body.playerOrder.length; i++) {
+      teamData.players[i].order = request.body.playerOrder[i].playerOrder;
+    }
+    for (let i = 0; i < request.body.pitcherOrder.length; i++) {
+      teamData.pitchers[i].order = request.body.pitcherOrder[i].pitcherOrder;
+    }
 
     return await this.teamRepository.save(teamData);
   }
@@ -145,8 +155,6 @@ export class TeamController {
    * @param gameResults
    */
   async update(ourTorB: string, team: Team, gameResults: GameResults) {
-
-    // TODO: チームの4つのパラメータも更新する？
     team.teamData = this.getUpdatedTeamData(ourTorB, team, gameResults);
     team.players = this.getUpdatedPlayerData(team, gameResults.players[ourTorB]);
     team.pitchers = this.getUpdatedPitcherData(ourTorB, team, gameResults);

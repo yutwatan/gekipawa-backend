@@ -41,7 +41,7 @@ export class PlayBallController {
       players: game.playerResults,
       pitcher: game.pitcherResult,
     };
-    const topResult = await teamTop.update('top', topTeam, gameResults);
+    await teamTop.update('top', topTeam, gameResults);
     await teamBot.update('bottom', botTeam, gameResults);
 
     // Current テーブルの更新
