@@ -70,6 +70,12 @@ export const Routes = [
     action: 'save'
   },
   {
+    method: 'put',
+    route: '/team/:id',
+    controller: TeamController,
+    action: 'modify'
+  },
+  {
     method: 'delete',
     route: '/team/:id',
     controller: TeamController,
